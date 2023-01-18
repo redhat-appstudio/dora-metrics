@@ -1,8 +1,7 @@
 name: Test container build
 # Controls when the workflow will run
 on:
-  push:
-    branches: [main]
+  pull_request:
 jobs:
   build-dora-metrics-image:
     runs-on: ubuntu-20.04
