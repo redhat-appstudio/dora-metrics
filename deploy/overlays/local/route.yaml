@@ -1,0 +1,14 @@
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: exporter
+  namespace: dora-metrics
+spec:
+  path: /metrics
+  to:
+    kind: Service
+    name: exporters-svc
+  port:
+    targetPort: 9101
+  wildcardPolicy: None
