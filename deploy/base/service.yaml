@@ -1,0 +1,16 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: exporters-svc
+  namespace: dora-metrics
+  labels:
+    app: exporter
+spec:
+  ports:
+    - name: metrics-port
+      protocol: TCP
+      port: 9101
+      targetPort: 9101
+  selector:
+    app: exporter

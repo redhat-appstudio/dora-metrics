@@ -1,0 +1,8 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: exporters-config
+  namespace: dora-metrics
+data:
+  imageFilters: '["quay.io/redhat-appstudio/", "quay.io/redhat-appstudio-qe/", "quay.io/stolostron/"]'
+  searchLabel: "app.kubernetes.io/instance"
