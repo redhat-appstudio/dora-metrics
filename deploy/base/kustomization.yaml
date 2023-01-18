@@ -9,8 +9,6 @@ resources:
 - configmap.yaml
 - deployment.yaml
 - service.yaml
-- servicemonitor.yaml
-- prometheus-rules.yaml
 
 images:
   - name: quay.io/abarbaro/exporters
