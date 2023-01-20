@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: container
-          image: 'quay.io/abarbaro/exporters:69500cf562373bb57b4d50f4a116d2fc4f38b794'
+          image: 'quay.io/redhat-appstudio/dora-metrics:68814cca4f0d767b11cceb4f2c6ea0220ed8d449'
           ports:
             - name: metrics-port
               containerPort: 9101
