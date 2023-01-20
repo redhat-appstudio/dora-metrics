@@ -14,7 +14,7 @@ import (
 func main() {
 	klog.InitFlags(nil)
 	defer klog.Flush()
-	flag.Set("v", "1")
+	flag.Set("v", "2")
 	flag.Parse()
 
 	reg := prometheus.NewRegistry()

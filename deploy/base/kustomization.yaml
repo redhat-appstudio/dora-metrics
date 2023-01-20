@@ -11,6 +11,6 @@ resources:
 - service.yaml
 
 images:
-  - name: quay.io/abarbaro/exporters
-    newName: quay.io/abarbaro/exporters
-    newTag: 7df7227708801e65472f99553d904eaf5e7619e0
+  - name: quay.io/redhat-appstudio/dora-metrics
+    newName: quay.io/redhat-appstudio/dora-metrics
+    newTag: 4ee139d33d2ddd8c73496b2a82975b46f22720a2

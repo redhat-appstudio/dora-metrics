@@ -137,7 +137,6 @@ func (collector *CommitTimeCollector) CollectCommitTime(ch chan<- prometheus.Met
 		// check if we have already searched for this commit, before requesting github apis
 		// if yes, use that value and return
 		commitTimeValue, commitCached := collector.gitCache[cont.Image]
-		fmt.Println(commitTimeValue, commitCached)
 		if !commitCached {
 			klog.V(3).Infof("Commit time is not cached yet: %s %s", fields["repo"], fields["hash"])
 		} else {
