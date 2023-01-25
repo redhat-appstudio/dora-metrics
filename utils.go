@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"k8s.io/klog/v2"
 )
 
 // Helper function and regex to extract values from an image URL
@@ -23,6 +25,18 @@ func reSubMatchMap(r *regexp.Regexp, str string) map[string]string {
 func filterImage(prefixes []string, image string) bool {
 	for _, prefix := range prefixes {
 		if strings.HasPrefix(image, prefix) {
+			return true
+		}
+	}
+
+	klog.V(1).Infof("image %s is filtered out", image)
+	return false
+}
+
+func excludeImage(excludes []string, image string) bool {
+	for _, prefix := range excludes {
+		if strings.HasPrefix(image, prefix) {
+			klog.V(1).Infof("image %s is excluded", image)
 			return true
 		}
 	}
