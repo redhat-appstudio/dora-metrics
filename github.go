@@ -38,8 +38,12 @@ func (gc *GithubClient) Client() *github.Client {
 	return gc.gh
 }
 
-func (gc *GithubClient) SearchCommit(hash string) (*github.Commit, error) {
-	commits, _, err := gc.Client().Search.Commits(context.Background(), "hash:"+hash, &github.SearchOptions{})
+func (gc *GithubClient) SearchCommit(hash string, org string) (*github.Commit, error) {
+	query := "hash:" + hash + " is:public"
+	if len(org) > 0 {
+		query = query + " org:" + org
+	}
+	commits, _, err := gc.Client().Search.Commits(context.Background(), query, &github.SearchOptions{})
 	if err != nil {
 		//fmt.Println("Search error: ", err)
 		return nil, err

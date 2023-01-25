@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"time"
 
@@ -26,6 +27,7 @@ type CommitTimeCollector struct {
 	gitCache               map[string]*time.Time
 	searchLabel            string
 	imageFilter            []string
+	imageExcludes          []string
 }
 
 // You must create a constructor for you collector that initializes every descriptor and returns a pointer to the collector
@@ -47,6 +49,8 @@ func NewCommitTimeCollector() (*CommitTimeCollector, error) {
 	// default values: if not specified in the config, use these values
 	searchLabel := "app.kubernetes.io/instance"
 	imageFilters := []string{"quay.io/redhat-appstudio/", "quay.io/redhat-appstudio-qe/", "quay.io/stolostron/", "quay.io/abarbaro/"}
+	imageExcludes := []string{}
+
 	configMap, err := kubeClient.GetConfigMap("exporters-config", "dora-metrics")
 	if err == nil {
 		filtersJson := configMap.Data["imageFilters"]
@@ -55,10 +59,24 @@ func NewCommitTimeCollector() (*CommitTimeCollector, error) {
 		if err != nil {
 			return nil, fmt.Errorf("cannot unmarshal config from configmap")
 		}
+		imageFilters = imageFilters_
+
+		imageExclude := configMap.Data["imageExclude"]
+		var imageExclude_ []string
+		err = json.Unmarshal([]byte(imageExclude), &imageExclude_)
+		if err != nil {
+			return nil, fmt.Errorf("cannot unmarshal config from configmap")
+		}
+		imageExcludes = imageExclude_
 
 		if label, ok := configMap.Data["searchLabel"]; ok {
 			searchLabel = label
 		}
+
+		if verbosity, ok := configMap.Data["verbosity"]; ok {
+			flag.Lookup("v").Value.Set(verbosity)
+		}
+
 	} else {
 		klog.Error("no configmap found")
 	}
@@ -85,6 +103,7 @@ func NewCommitTimeCollector() (*CommitTimeCollector, error) {
 		gitCache:      map[string]*time.Time{},
 		searchLabel:   searchLabel,
 		imageFilter:   imageFilters,
+		imageExcludes: imageExcludes,
 	}, nil
 }
 
@@ -114,7 +133,9 @@ func (collector *CommitTimeCollector) Collect(ch chan<- prometheus.Metric) {
 		// and get all container's images
 		for _, cont := range depl.Spec.Template.Spec.Containers {
 			// filter the images to only use the appstudio ones
-			if isOk := filterImage(collector.imageFilter, cont.Image); isOk {
+			isOk := filterImage(collector.imageFilter, cont.Image)
+			isExcluded := excludeImage(collector.imageExcludes, cont.Image)
+			if isOk && !isExcluded {
 				collector.CollectCommitTime(ch, &depl, &cont)
 				collector.CollectDeployTime(ch, &depl, &cont)
 				collector.commitHashSet[cont.Image] = true
@@ -126,49 +147,57 @@ func (collector *CommitTimeCollector) Collect(ch chan<- prometheus.Metric) {
 
 func (collector *CommitTimeCollector) CollectCommitTime(ch chan<- prometheus.Metric, depl *appsv1.Deployment, cont *v1.Container) {
 	// check we have not parsed this image already
+	// get data needed for prometheus labels
+	namespace := depl.Namespace
+	component := depl.Labels[collector.searchLabel]
+	// parse the image url to extract organization, repository and commit hash
+	fields := reSubMatchMap(imageRegex, cont.Image)
+
 	_, ok := collector.commitHashSet[cont.Image]
 	if !ok {
-		// get data needed for prometheus labels
-		namespace := depl.Namespace
-		component := depl.Labels[collector.searchLabel]
-		// parse the image url to extract organization, repository and commit hash
-		fields := reSubMatchMap(imageRegex, cont.Image)
-
 		// check if we have already searched for this commit, before requesting github apis
 		// if yes, use that value and return
-		commitTimeValue, commitCached := collector.gitCache[cont.Image]
+		commitTimeValue, commitCached := collector.gitCache[fields["hash"]]
 		if !commitCached {
 			klog.V(3).Infof("Commit time is not cached yet: %s %s", fields["repo"], fields["hash"])
 		} else {
 			m1 := prometheus.MustNewConstMetric(collector.commitTimeMetric, prometheus.GaugeValue, float64(commitTimeValue.Unix()), component, fields["hash"], cont.Image, namespace)
 			// We let prometheus set the scraping timestamp; if we force-set it to the commit time we risk losing old out-of-bound data
 			ch <- m1
-			klog.V(3).Infof("collected (from cache) committime for %s", cont.Image)
+			klog.V(1).Infof("collected (from cache) committime for %s", cont.Image)
 			return
 		}
 
 		// if the data is not cached, look in github: first try is using org+repo+hash to directly get the data from the repo (we want to avoid searching for a generic hash)
 		commit, err := collector.githubClient.GetCommitFromOrgAndRepo(fields["org"], fields["repo"], fields["hash"])
 		if err != nil {
-			klog.V(2).Infof("Can't find commit time using %s, %s and %s", fields["org"], fields["repo"], fields["hash"])
+			klog.V(2).Infof("Can't find commit time using %s, %s and %s: %s", fields["org"], fields["repo"], fields["hash"], err)
 		} else {
 			m1 := prometheus.MustNewConstMetric(collector.commitTimeMetric, prometheus.GaugeValue, float64(commit.Author.Date.Unix()), component, fields["hash"], cont.Image, namespace)
 			// We let prometheus set the scraping timestamp; if we force-set it to the commit time we risk losing old out-of-bound data
 			ch <- m1
 			klog.V(3).Infof("collected committime for %s", cont.Image)
-			collector.gitCache[cont.Image] = commit.Author.Date
+			collector.gitCache[fields["hash"]] = commit.Author.Date
 			return
 		}
 
-		commit, err = collector.githubClient.SearchCommit(fields["hash"])
+		commit, err = collector.githubClient.SearchCommit(fields["hash"], fields["org"])
 		if err != nil {
-			klog.V(1).Infof("Can't find commit either by get or search: %s - %s", fields["repo"], fields["hash"])
+			// try again once
+			commit, err = collector.githubClient.SearchCommit(fields["hash"], fields["org"])
+			klog.V(1).Infof("Retrying search: %s - %s - %s: %s", fields["repo"], fields["hash"], fields["org"], err)
+		}
+
+		if err != nil {
+			// try again once
+			commit, err = collector.githubClient.SearchCommit(fields["hash"], fields["org"])
+			klog.V(1).Infof("Can't find commit either by get or search: %s - %s - %s: %s", fields["repo"], fields["hash"], fields["org"], err)
 		} else {
 			m1 := prometheus.MustNewConstMetric(collector.commitTimeMetric, prometheus.GaugeValue, float64(commit.Author.Date.Unix()), component, fields["hash"], cont.Image, namespace)
 			// We let prometheus set the scraping timestamp; if we force-set it to the commit time we risk losing old out-of-bound data
 			ch <- m1
 			klog.V(3).Infof("collected committime for %s", cont.Image, ": ", err)
-			collector.gitCache[cont.Image] = commit.Author.Date
+			collector.gitCache[fields["hash"]] = commit.Author.Date
 			return
 		}
 
