@@ -1,47 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_PROMETHEUS-APPSTUDIO-DS",
-      "label": "prometheus-appstudio-ds",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__elements": {},
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "9.1.6"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "table",
-      "name": "Table",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -67,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 12,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -87,7 +44,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -135,7 +92,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -153,7 +110,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -227,7 +184,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "expr": "avg(\n    (( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app!~\".*gitopsdepl.*\"}[$__range]))))))\n)",
@@ -254,7 +211,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -300,7 +257,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -318,7 +275,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -365,7 +322,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -382,7 +339,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -459,7 +416,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "expr": "count(count_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]))",
@@ -486,7 +443,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -556,7 +513,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -597,7 +554,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -690,7 +647,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -732,7 +689,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -798,7 +755,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -828,7 +785,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -932,7 +889,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -980,7 +937,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -1031,7 +988,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -1061,7 +1018,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -1127,7 +1084,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -1157,7 +1114,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -1247,7 +1204,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -1291,7 +1248,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+        "uid": "PF224BEF3374A25F8"
       },
       "fieldConfig": {
         "defaults": {
@@ -1368,7 +1325,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -1409,7 +1366,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "fieldConfig": {
             "defaults": {
@@ -1457,7 +1414,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+                "uid": "PF224BEF3374A25F8"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -1474,7 +1431,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "fieldConfig": {
             "defaults": {
@@ -1553,7 +1510,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+                "uid": "PF224BEF3374A25F8"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -1583,7 +1540,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "fieldConfig": {
             "defaults": {
@@ -1633,7 +1590,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+                "uid": "PF224BEF3374A25F8"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -1666,7 +1623,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "fieldConfig": {
             "defaults": {
@@ -1716,7 +1673,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+                "uid": "PF224BEF3374A25F8"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -1734,7 +1691,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "fieldConfig": {
             "defaults": {
@@ -1812,7 +1769,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+                "uid": "PF224BEF3374A25F8"
               },
               "editorMode": "code",
               "expr": "count(count_over_time(dora:deploytime{app='$app'}[$__range]))",
@@ -1838,7 +1795,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "fieldConfig": {
             "defaults": {
@@ -1889,7 +1846,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+                "uid": "PF224BEF3374A25F8"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -1907,7 +1864,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "fieldConfig": {
             "defaults": {
@@ -1975,7 +1932,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+                "uid": "PF224BEF3374A25F8"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -2017,7 +1974,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "fieldConfig": {
             "defaults": {
@@ -2097,7 +2054,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+                "uid": "PF224BEF3374A25F8"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -2147,7 +2104,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+            "uid": "PF224BEF3374A25F8"
           },
           "fieldConfig": {
             "defaults": {
@@ -2234,7 +2191,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+                "uid": "PF224BEF3374A25F8"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -2293,10 +2250,14 @@
   "templating": {
     "list": [
       {
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "gitops",
+          "value": "gitops"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS-APPSTUDIO-DS}"
+          "uid": "PF224BEF3374A25F8"
         },
         "definition": "label_values(dora:deployactive{app!~\".*gitopsdepl.*\"}, app)",
         "hide": 0,
