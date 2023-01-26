@@ -11,4 +11,4 @@ generatorOptions:
 configMapGenerator:
   - name: grafana-dashboard-dora-metrics
     files:
-      - grafana-dashboards/dora-dashboard.json
+      - dashboards/dora-dashboard.json
