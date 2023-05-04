@@ -42,10 +42,6 @@
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -90,10 +86,7 @@
       "pluginVersion": "9.1.6",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "exemplar": false,
           "expr": "avg(\n    (( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app!~\".*gitopsdepl.*\"}[$__range]))))))\n)",
@@ -108,10 +101,6 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -182,10 +171,7 @@
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "expr": "avg(\n    (( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app!~\".*gitopsdepl.*\"}[$__range]))))))\n)",
           "legendFormat": "__auto",
@@ -209,10 +195,6 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -255,10 +237,7 @@
       "pluginVersion": "9.1.6",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "exemplar": false,
           "expr": "count(\n    min by (app, image, commit_hash) (min_over_time(dora:deployactive{app!~\".*gitopsdepl.*\"}[15m]))\n)",
@@ -273,10 +252,6 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -320,10 +295,7 @@
       "pluginVersion": "9.1.6",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "exemplar": false,
           "expr": "count(count_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]))",
@@ -337,10 +309,6 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -414,10 +382,7 @@
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "expr": "count(count_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]))",
           "legendFormat": "__auto",
@@ -441,10 +406,6 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -511,10 +472,7 @@
       "pluginVersion": "9.1.6",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "exemplar": false,
           "expr": "min by (app, image, commit_hash) (min_over_time(dora:deployactive{app!~\".*gitopsdepl.*\"}[15m]))",
@@ -552,10 +510,6 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -645,10 +599,7 @@
       "pluginVersion": "9.1.6",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "exemplar": false,
           "expr": "(( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app!~\".*gitopsdepl.*\"}[$__range]))))))",
@@ -687,10 +638,6 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -753,10 +700,7 @@
       "pluginVersion": "9.1.6",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "exemplar": false,
           "expr": "min by (app, image, commit_hash) (min_over_time(dora:deployactive{app!~\".*gitopsdepl.*\"}[1h])) - on (app, image) group_right (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app!~\".*gitopsdepl.*\"}[1h])))",
@@ -783,10 +727,6 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -887,10 +827,7 @@
       "pluginVersion": "9.1.6",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "exemplar": false,
           "expr": "min(min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])) by (app, image, commit_hash) * 1000",
@@ -935,10 +872,6 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -986,10 +919,7 @@
       "pluginVersion": "9.1.6",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "exemplar": false,
           "expr": "count(\n    min(min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])) by (app, image, commit_hash) * 1000 unless min(min_over_time(dora:committime[$__range])) by (app, image, commit_hash) * 1000\n)",
@@ -1016,10 +946,6 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1082,10 +1008,7 @@
       "pluginVersion": "9.1.6",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "exemplar": false,
           "expr": "    min(min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])) by (app, image, commit_hash) * 1000 unless min(min_over_time(dora:committime[$__range])) by (app, image, commit_hash) * 1000\n",
@@ -1112,10 +1035,6 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1202,10 +1121,7 @@
       "pluginVersion": "9.1.6",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "exemplar": false,
           "expr": "min(min_over_time(dora:committime[$__range])) by (app, image, commit_hash) * 1000 and min(min_over_time(dora:deploytime[$__range])) by (app, image, commit_hash) * 1000",
@@ -1246,10 +1162,6 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1323,10 +1235,7 @@
       "pluginVersion": "9.1.6",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "editorMode": "code",
           "exemplar": false,
           "expr": "min(min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])) by (app, image, commit_hash) * 1000",
@@ -1364,10 +1273,7 @@
       "id": 20,
       "panels": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1412,10 +1318,7 @@
           "pluginVersion": "9.1.6",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PF224BEF3374A25F8"
-              },
+
               "editorMode": "code",
               "exemplar": false,
               "expr": "avg(\n    (( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app='$app'}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app='$app'}[$__range]))))))\n)",
@@ -1429,10 +1332,7 @@
           "type": "stat"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1508,10 +1408,7 @@
           },
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PF224BEF3374A25F8"
-              },
+
               "editorMode": "code",
               "exemplar": false,
               "expr": "avg(\n    (( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app='$app'}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app='$app'}[$__range]))))))\n)",
@@ -1538,10 +1435,7 @@
           "type": "timeseries"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1588,10 +1482,7 @@
           "pluginVersion": "9.1.6",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PF224BEF3374A25F8"
-              },
+
               "editorMode": "code",
               "exemplar": false,
               "expr": "min(min_over_time(dora:deployactive{app='$app'}[$__range]))*1000",
@@ -1621,10 +1512,7 @@
           "type": "stat"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "fieldConfig": {
             "defaults": {
               "mappings": [],
@@ -1671,10 +1559,7 @@
           "pluginVersion": "9.1.6",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PF224BEF3374A25F8"
-              },
+
               "editorMode": "code",
               "exemplar": false,
               "expr": "count(count_over_time(dora:deploytime{app='$app'}[$__range]))",
@@ -1689,10 +1574,7 @@
           "type": "stat"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1767,10 +1649,7 @@
           },
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PF224BEF3374A25F8"
-              },
+
               "editorMode": "code",
               "expr": "count(count_over_time(dora:deploytime{app='$app'}[$__range]))",
               "legendFormat": "__auto",
@@ -1793,10 +1672,7 @@
           "type": "timeseries"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1844,10 +1720,7 @@
           "pluginVersion": "9.1.6",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PF224BEF3374A25F8"
-              },
+
               "editorMode": "code",
               "exemplar": false,
               "expr": "count(\n    min(min_over_time(dora:deploytime{app='$app'}[$__range])) by (app, image, commit_hash) * 1000 unless min(min_over_time(dora:committime{app='$app'}[$__range])) by (app, image, commit_hash) * 1000\n)",
@@ -1862,10 +1735,7 @@
           "type": "stat"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1930,10 +1800,7 @@
           "pluginVersion": "9.1.6",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PF224BEF3374A25F8"
-              },
+
               "editorMode": "code",
               "exemplar": false,
               "expr": "(( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app='$app'}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app='$app'}[$__range]))))))",
@@ -1972,10 +1839,7 @@
           "type": "table"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "fieldConfig": {
             "defaults": {
               "custom": {
@@ -2052,10 +1916,7 @@
           "pluginVersion": "9.1.6",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PF224BEF3374A25F8"
-              },
+
               "editorMode": "code",
               "exemplar": false,
               "expr": "min(min_over_time(dora:committime{app='$app'}[$__range])) by (app, image, commit_hash) * 1000 and min(min_over_time(dora:deploytime{app='$app'}[$__range])) by (app, image, commit_hash) * 1000",
@@ -2102,10 +1963,7 @@
           "type": "table"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+
           "fieldConfig": {
             "defaults": {
               "custom": {
@@ -2189,10 +2047,7 @@
           "pluginVersion": "9.1.6",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PF224BEF3374A25F8"
-              },
+
               "editorMode": "code",
               "exemplar": false,
               "expr": "min(min_over_time(dora:deploytime{app='$app'}[$__range])) by (app, image, commit_hash) * 1000",
@@ -2254,10 +2109,6 @@
           "selected": false,
           "text": "gitops",
           "value": "gitops"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "PF224BEF3374A25F8"
         },
         "definition": "label_values(dora:deployactive{app!~\".*gitopsdepl.*\"}, app)",
         "hide": 0,
