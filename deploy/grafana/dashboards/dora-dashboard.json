@@ -22,14 +22,15 @@
     ]
   },
   "editable": true,
-  "fiscalYearStartMonth": 0,
+  "gnetId": null,
   "graphTooltip": 0,
-  "id": 12,
+  "id": 4,
+  "iteration": 1683290046925,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "collapsed": false,
+      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -42,10 +43,7 @@
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -85,9 +83,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "7.5.17",
       "targets": [
         {
           "datasource": {
@@ -108,18 +107,13 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -127,6 +121,7 @@
             "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
+              "graph": false,
               "legend": false,
               "tooltip": false,
               "viz": false
@@ -138,14 +133,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "spanNulls": false
           },
           "mappings": [],
           "thresholds": {
@@ -178,6 +166,9 @@
         "tooltip": {
           "mode": "single",
           "sort": "none"
+        },
+        "tooltipOptions": {
+          "mode": "single"
         }
       },
       "targets": [
@@ -187,7 +178,9 @@
             "uid": "PF224BEF3374A25F8"
           },
           "editorMode": "code",
+          "exemplar": true,
           "expr": "avg(\n    (( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app!~\".*gitopsdepl.*\"}[$__range]))))))\n)",
+          "interval": "",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -209,10 +202,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -250,9 +240,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "7.5.17",
       "targets": [
         {
           "datasource": {
@@ -273,10 +264,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -315,9 +303,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "7.5.17",
       "targets": [
         {
           "datasource": {
@@ -337,18 +326,13 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -356,6 +340,7 @@
             "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
+              "graph": false,
               "legend": false,
               "tooltip": false,
               "viz": false
@@ -367,14 +352,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "spanNulls": false
           },
           "mappings": [],
           "thresholds": {
@@ -410,6 +388,9 @@
         "tooltip": {
           "mode": "single",
           "sort": "none"
+        },
+        "tooltipOptions": {
+          "mode": "single"
         }
       },
       "targets": [
@@ -441,10 +422,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -453,7 +431,7 @@
           "custom": {
             "align": "auto",
             "displayMode": "auto",
-            "inspect": false
+            "filterable": false
           },
           "mappings": [],
           "thresholds": {
@@ -508,7 +486,7 @@
           }
         ]
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "7.5.17",
       "targets": [
         {
           "datasource": {
@@ -552,10 +530,7 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -564,7 +539,7 @@
           "custom": {
             "align": "auto",
             "displayMode": "auto",
-            "inspect": false
+            "filterable": false
           },
           "decimals": 2,
           "mappings": [],
@@ -642,7 +617,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "7.5.17",
       "targets": [
         {
           "datasource": {
@@ -687,10 +662,7 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -699,7 +671,7 @@
           "custom": {
             "align": "auto",
             "displayMode": "auto",
-            "inspect": false
+            "filterable": false
           },
           "mappings": [],
           "thresholds": {
@@ -750,7 +722,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "7.5.17",
       "targets": [
         {
           "datasource": {
@@ -783,10 +755,7 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -795,7 +764,7 @@
           "custom": {
             "align": "auto",
             "displayMode": "auto",
-            "inspect": false
+            "filterable": false
           },
           "decimals": 2,
           "mappings": [],
@@ -813,7 +782,7 @@
               }
             ]
           },
-          "unit": "ms"
+          "unit": "ns"
         },
         "overrides": [
           {
@@ -831,36 +800,12 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "image_sha"
+              "options": "Deployment Time"
             },
             "properties": [
               {
-                "id": "custom.width",
-                "value": 355
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "commit_hash"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 269
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "image"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 204
+                "id": "unit",
+                "value": "dateTimeAsIso"
               }
             ]
           }
@@ -884,7 +829,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "7.5.17",
       "targets": [
         {
           "datasource": {
@@ -896,6 +841,7 @@
           "expr": "min(min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])) by (app, image, commit_hash) * 1000",
           "format": "table",
           "instant": true,
+          "interval": "",
           "legendFormat": "__auto",
           "range": false,
           "refId": "A"
@@ -918,27 +864,12 @@
               "Value": "Deployment Time"
             }
           }
-        },
-        {
-          "id": "convertFieldType",
-          "options": {
-            "conversions": [
-              {
-                "destinationType": "time",
-                "targetField": "Deployment Time"
-              }
-            ],
-            "fields": {}
-          }
         }
       ],
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -981,9 +912,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "7.5.17",
       "targets": [
         {
           "datasource": {
@@ -1016,10 +948,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1028,7 +957,7 @@
           "custom": {
             "align": "auto",
             "displayMode": "auto",
-            "inspect": false
+            "filterable": false
           },
           "mappings": [],
           "noValue": "No untracked deployments in the selected time range",
@@ -1079,7 +1008,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "7.5.17",
       "targets": [
         {
           "datasource": {
@@ -1112,10 +1041,7 @@
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1124,8 +1050,9 @@
           "custom": {
             "align": "auto",
             "displayMode": "auto",
-            "inspect": false
+            "filterable": false
           },
+          "decimals": 2,
           "mappings": [],
           "noValue": "No new commits in the selected time range",
           "thresholds": {
@@ -1140,7 +1067,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": [
           {
@@ -1158,24 +1086,12 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "image_sha"
+              "options": "Commit Time"
             },
             "properties": [
               {
-                "id": "custom.width",
-                "value": 383
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "commit_hash"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 361
+                "id": "unit",
+                "value": "dateTimeAsIso"
               }
             ]
           }
@@ -1199,7 +1115,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "7.5.17",
       "targets": [
         {
           "datasource": {
@@ -1208,9 +1124,10 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "min(min_over_time(dora:committime[$__range])) by (app, image, commit_hash) * 1000 and min(min_over_time(dora:deploytime[$__range])) by (app, image, commit_hash) * 1000",
+          "expr": "min(min_over_time(dora:committime[$__range])) by (app, image, commit_hash) *1000 and min(min_over_time(dora:deploytime[$__range])) by (app, image, commit_hash) *1000",
           "format": "table",
           "instant": true,
+          "interval": "",
           "legendFormat": "__auto",
           "range": false,
           "refId": "A"
@@ -1229,27 +1146,12 @@
               "Value": "Commit Time"
             }
           }
-        },
-        {
-          "id": "convertFieldType",
-          "options": {
-            "conversions": [
-              {
-                "destinationType": "time",
-                "targetField": "Commit Time"
-              }
-            ],
-            "fields": {}
-          }
         }
       ],
       "type": "table"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PF224BEF3374A25F8"
-      },
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1258,7 +1160,7 @@
           "custom": {
             "align": "auto",
             "displayMode": "auto",
-            "inspect": false
+            "filterable": false
           },
           "mappings": [],
           "thresholds": {
@@ -1320,7 +1222,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.1.6",
+      "pluginVersion": "7.5.17",
       "targets": [
         {
           "datasource": {
@@ -1355,6 +1257,7 @@
     },
     {
       "collapsed": true,
+      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1364,10 +1267,7 @@
       "id": 20,
       "panels": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+          "datasource": null,
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1407,9 +1307,10 @@
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.1.6",
+          "pluginVersion": "7.5.17",
           "targets": [
             {
               "datasource": {
@@ -1429,18 +1330,13 @@
           "type": "stat"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+          "datasource": null,
           "fieldConfig": {
             "defaults": {
               "color": {
                 "mode": "palette-classic"
               },
               "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
@@ -1448,6 +1344,7 @@
                 "fillOpacity": 0,
                 "gradientMode": "none",
                 "hideFrom": {
+                  "graph": false,
                   "legend": false,
                   "tooltip": false,
                   "viz": false
@@ -1459,14 +1356,7 @@
                   "type": "linear"
                 },
                 "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
+                "spanNulls": false
               },
               "mappings": [],
               "noValue": "No Lead Time available for this app in the selected time range",
@@ -1504,6 +1394,9 @@
             "tooltip": {
               "mode": "single",
               "sort": "none"
+            },
+            "tooltipOptions": {
+              "mode": "single"
             }
           },
           "targets": [
@@ -1538,26 +1431,27 @@
           "type": "timeseries"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+          "datasource": null,
           "fieldConfig": {
             "defaults": {
               "color": {
                 "mode": "thresholds"
               },
               "mappings": [],
+              "noValue": "0",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "text",
+                    "color": "green",
                     "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
                   }
                 ]
-              },
-              "unit": "s"
+              }
             },
             "overrides": []
           },
@@ -1567,7 +1461,7 @@
             "x": 18,
             "y": 2
           },
-          "id": 70,
+          "id": 72,
           "options": {
             "colorMode": "value",
             "graphMode": "area",
@@ -1577,15 +1471,13 @@
               "calcs": [
                 "lastNotNull"
               ],
-              "fields": "/^Value$/",
+              "fields": "",
               "values": false
             },
-            "text": {
-              "valueSize": 39
-            },
+            "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.1.6",
+          "pluginVersion": "7.5.17",
           "targets": [
             {
               "datasource": {
@@ -1594,7 +1486,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "min(min_over_time(dora:deployactive{app='$app'}[$__range]))*1000",
+              "expr": "count(\n    min(min_over_time(dora:deploytime{app='$app'}[$__range])) by (app, image, commit_hash) * 1000 unless min(min_over_time(dora:committime{app='$app'}[$__range])) by (app, image, commit_hash) * 1000\n)",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -1602,29 +1494,11 @@
               "refId": "A"
             }
           ],
-          "title": "Last active deployment",
-          "transformations": [
-            {
-              "id": "convertFieldType",
-              "options": {
-                "conversions": [
-                  {
-                    "dateFormat": "",
-                    "destinationType": "time",
-                    "targetField": "Value"
-                  }
-                ],
-                "fields": {}
-              }
-            }
-          ],
+          "title": "Untracked Deployments",
           "type": "stat"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+          "datasource": null,
           "fieldConfig": {
             "defaults": {
               "mappings": [],
@@ -1666,9 +1540,10 @@
               "fields": "",
               "values": false
             },
+            "text": {},
             "textMode": "value"
           },
-          "pluginVersion": "9.1.6",
+          "pluginVersion": "7.5.17",
           "targets": [
             {
               "datasource": {
@@ -1689,18 +1564,13 @@
           "type": "stat"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+          "datasource": null,
           "fieldConfig": {
             "defaults": {
               "color": {
                 "mode": "palette-classic"
               },
               "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
@@ -1708,6 +1578,7 @@
                 "fillOpacity": 0,
                 "gradientMode": "none",
                 "hideFrom": {
+                  "graph": false,
                   "legend": false,
                   "tooltip": false,
                   "viz": false
@@ -1719,14 +1590,7 @@
                   "type": "linear"
                 },
                 "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
+                "spanNulls": false
               },
               "mappings": [],
               "noValue": "No Deployment frequency available for this app in the selected time range",
@@ -1763,6 +1627,9 @@
             "tooltip": {
               "mode": "single",
               "sort": "none"
+            },
+            "tooltipOptions": {
+              "mode": "single"
             }
           },
           "targets": [
@@ -1793,79 +1660,7 @@
           "type": "timeseries"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "noValue": "0",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 1
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 5,
-            "w": 6,
-            "x": 18,
-            "y": 7
-          },
-          "id": 72,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "9.1.6",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PF224BEF3374A25F8"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "count(\n    min(min_over_time(dora:deploytime{app='$app'}[$__range])) by (app, image, commit_hash) * 1000 unless min(min_over_time(dora:committime{app='$app'}[$__range])) by (app, image, commit_hash) * 1000\n)",
-              "format": "table",
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "A"
-            }
-          ],
-          "title": "Untracked Deployments",
-          "type": "stat"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+          "datasource": null,
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1874,7 +1669,7 @@
               "custom": {
                 "align": "auto",
                 "displayMode": "auto",
-                "inspect": false
+                "filterable": false
               },
               "decimals": 2,
               "mappings": [],
@@ -1927,7 +1722,7 @@
             "showHeader": true,
             "sortBy": []
           },
-          "pluginVersion": "9.1.6",
+          "pluginVersion": "7.5.17",
           "targets": [
             {
               "datasource": {
@@ -1972,16 +1767,13 @@
           "type": "table"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+          "datasource": null,
           "fieldConfig": {
             "defaults": {
               "custom": {
                 "align": "auto",
                 "displayMode": "auto",
-                "inspect": false
+                "filterable": false
               },
               "mappings": [],
               "noValue": "No commit time available for this app in the selected time range",
@@ -2023,6 +1815,18 @@
                     "value": 146
                   }
                 ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Commit Time"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "dateTimeAsIso"
+                  }
+                ]
               }
             ]
           },
@@ -2049,7 +1853,7 @@
               }
             ]
           },
-          "pluginVersion": "9.1.6",
+          "pluginVersion": "7.5.17",
           "targets": [
             {
               "datasource": {
@@ -2061,6 +1865,7 @@
               "expr": "min(min_over_time(dora:committime{app='$app'}[$__range])) by (app, image, commit_hash) * 1000 and min(min_over_time(dora:deploytime{app='$app'}[$__range])) by (app, image, commit_hash) * 1000",
               "format": "table",
               "instant": true,
+              "interval": "",
               "legendFormat": "__auto",
               "range": false,
               "refId": "A"
@@ -2085,33 +1890,18 @@
                   "Value": "Commit Time"
                 }
               }
-            },
-            {
-              "id": "convertFieldType",
-              "options": {
-                "conversions": [
-                  {
-                    "destinationType": "time",
-                    "targetField": "Commit Time"
-                  }
-                ],
-                "fields": {}
-              }
             }
           ],
           "type": "table"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
+          "datasource": null,
           "fieldConfig": {
             "defaults": {
               "custom": {
                 "align": "auto",
                 "displayMode": "auto",
-                "inspect": false
+                "filterable": false
               },
               "mappings": [],
               "noValue": "No deployment available for this app in the selected time range",
@@ -2163,6 +1953,10 @@
                   {
                     "id": "custom.width",
                     "value": 187
+                  },
+                  {
+                    "id": "unit",
+                    "value": "dateTimeAsIso"
                   }
                 ]
               }
@@ -2186,7 +1980,7 @@
             "showHeader": true,
             "sortBy": []
           },
-          "pluginVersion": "9.1.6",
+          "pluginVersion": "7.5.17",
           "targets": [
             {
               "datasource": {
@@ -2222,18 +2016,6 @@
                   "Value": "Deploy Time"
                 }
               }
-            },
-            {
-              "id": "convertFieldType",
-              "options": {
-                "conversions": [
-                  {
-                    "destinationType": "time",
-                    "targetField": "Deploy Time"
-                  }
-                ],
-                "fields": {}
-              }
             }
           ],
           "type": "table"
@@ -2244,22 +2026,22 @@
     }
   ],
   "refresh": false,
-  "schemaVersion": 37,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
+        "allValue": null,
         "current": {
           "selected": false,
-          "text": "gitops",
-          "value": "gitops"
+          "text": "gitops-in-cluster-local",
+          "value": "gitops-in-cluster-local"
         },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "PF224BEF3374A25F8"
-        },
+        "datasource": null,
         "definition": "label_values(dora:deployactive{app!~\".*gitopsdepl.*\"}, app)",
+        "description": null,
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "Application",
@@ -2275,6 +2057,7 @@
         "skipUrlSync": false,
         "sort": 1,
         "tagValuesQuery": "",
+        "tags": [],
         "tagsQuery": "",
         "type": "query",
         "useTags": false
@@ -2282,7 +2065,7 @@
     ]
   },
   "time": {
-    "from": "now-2d",
+    "from": "now-7d",
     "to": "now"
   },
   "timepicker": {
@@ -2301,7 +2084,6 @@
   },
   "timezone": "browser",
   "title": "DORA Metrics for StoneSoup",
-  "uid": "fIFuYmT4k",
-  "version": 12,
-  "weekStart": ""
+  "uid": "c47d603cdd3242726e6777d97921da12b72d2dfb",
+  "version": 11
 }
