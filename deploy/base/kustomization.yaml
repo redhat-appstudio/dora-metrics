@@ -9,6 +9,7 @@ resources:
 - configmap.yaml
 - deployment.yaml
 - service.yaml
+- servicemonitor.yaml
 
 images:
   - name: quay.io/redhat-appstudio/dora-metrics
