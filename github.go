@@ -34,6 +34,10 @@ func NewGithubClient() (*GithubClient, error) {
 		fmt.Printf("%s not set\n", key)
 		return nil, fmt.Errorf("%s not set", key)
 	}
+	if val == "" {
+		fmt.Printf("%s is empty\n", key)
+		return nil, fmt.Errorf("%s is empty", key)
+	}
 
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(

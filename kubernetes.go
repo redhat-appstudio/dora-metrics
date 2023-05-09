@@ -3,15 +3,18 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	argocd "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
 	crclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
@@ -149,4 +152,20 @@ func (k *KubeClients) GetDeploymentReplicaSetCreationTime(namespace string, owne
 		}
 	}
 	return metav1.Time{}, fmt.Errorf("no replicaset found for %s or replicas are not available", image)
+}
+
+func (k *KubeClients) waitConfigMapAvailable(name string, namespace string) error {
+	for {
+		_, err := k.kubeClient.CoreV1().ConfigMaps(namespace).Get(context.Background(), name, metav1.GetOptions{})
+		if err == nil {
+			klog.V(1).Infof("ConfigMap found: %s \n", name)
+			return nil
+		}
+		if !errors.IsNotFound(err) {
+			klog.V(1).Infof("Error getting the configmap: %s \n", name)
+			return nil
+		}
+		klog.V(1).Infof("ConfigMap not available: %s \n", name)
+		time.Sleep(5 * time.Second)
+	}
 }
