@@ -59,10 +59,11 @@ func NewCommitTimeCollector() (*CommitTimeCollector, error) {
 	}
 
 	// Get configmap and set config parameters
+	kubeClient.waitConfigMapAvailable("exporters-config", "dora-metrics")
 
 	// default values: if not specified in the config, use these values
 	searchLabel := "app.kubernetes.io/instance"
-	imageFilters := []string{"quay.io/redhat-appstudio/", "quay.io/redhat-appstudio-qe/", "quay.io/stolostron/", "quay.io/abarbaro/"}
+	imageFilters := []string{"quay.io/redhat-appstudio/", "quay.io/redhat-appstudio-qe/", "quay.io/stolostrn/", "quay.io/abarbaro/"}
 	imageExcludes := []string{}
 
 	configMap, err := kubeClient.GetConfigMap("exporters-config", "dora-metrics")
@@ -121,13 +122,13 @@ func NewCommitTimeCollector() (*CommitTimeCollector, error) {
 	}, nil
 }
 
-//Each and every collector must implement the Describe function. It essentially writes all descriptors to the prometheus desc channel.
+// Each and every collector must implement the Describe function. It essentially writes all descriptors to the prometheus desc channel.
 func (collector *CommitTimeCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- collector.commitTimeMetric
 	ch <- collector.deployTimeMetric
 }
 
-//Collect implements required collect function for all promehteus collectors
+// Collect implements required collect function for all promehteus collectors
 func (collector *CommitTimeCollector) Collect(ch chan<- prometheus.Metric) {
 
 	// List all deployments having argocd label app.kubernetes.io/instance
