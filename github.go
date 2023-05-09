@@ -36,7 +36,6 @@ func NewGithubClient() (*GithubClient, error) {
 	}
 	if val == "" {
 		fmt.Printf("%s is empty\n", key)
-		return nil, fmt.Errorf("%s is empty", key)
 	}
 
 	ctx := context.Background()
