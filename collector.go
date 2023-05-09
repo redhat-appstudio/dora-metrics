@@ -15,9 +15,7 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
-	"fmt"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -58,43 +56,10 @@ func NewCommitTimeCollector() (*CommitTimeCollector, error) {
 		return nil, err
 	}
 
-	// Get configmap and set config parameters
-	kubeClient.waitConfigMapAvailable("exporters-config", "dora-metrics")
-
-	// default values: if not specified in the config, use these values
 	searchLabel := "app.kubernetes.io/instance"
 	imageFilters := []string{"quay.io/redhat-appstudio/", "quay.io/redhat-appstudio-qe/", "quay.io/stolostrn/", "quay.io/abarbaro/"}
-	imageExcludes := []string{}
-
-	configMap, err := kubeClient.GetConfigMap("exporters-config", "dora-metrics")
-	if err == nil {
-		filtersJson := configMap.Data["imageFilters"]
-		var imageFilters_ []string
-		err = json.Unmarshal([]byte(filtersJson), &imageFilters_)
-		if err != nil {
-			return nil, fmt.Errorf("cannot unmarshal config from configmap")
-		}
-		imageFilters = imageFilters_
-
-		imageExclude := configMap.Data["imageExclude"]
-		var imageExclude_ []string
-		err = json.Unmarshal([]byte(imageExclude), &imageExclude_)
-		if err != nil {
-			return nil, fmt.Errorf("cannot unmarshal config from configmap")
-		}
-		imageExcludes = imageExclude_
-
-		if label, ok := configMap.Data["searchLabel"]; ok {
-			searchLabel = label
-		}
-
-		if verbosity, ok := configMap.Data["verbosity"]; ok {
-			flag.Lookup("v").Value.Set(verbosity)
-		}
-
-	} else {
-		klog.Error("no configmap found")
-	}
+	imageExcludes := []string{"quay.io/redhat-appstudio/gitopsdepl", "quay.io/redhat-appstudio/user-workload"}
+	flag.Lookup("v").Value.Set("1")
 
 	klog.V(3).Infof("Using label ", searchLabel)
 	klog.V(3).Infof("Using image filters: ", imageFilters)
