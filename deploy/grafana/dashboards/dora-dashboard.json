@@ -25,7 +25,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 4,
-  "iteration": 1683290046925,
+  "iteration": 1687794770336,
   "links": [],
   "panels": [
     {
@@ -37,10 +37,418 @@
         "x": 0,
         "y": 0
       },
-      "id": 44,
+      "id": 104,
       "panels": [],
-      "title": "Global Metrics",
+      "title": "DORA Metrics",
       "type": "row"
+    },
+    {
+      "datasource": null,
+      "description": "Active incidents in the selected time range",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "id": 88,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.17",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "count(\nmin by (app) (min_over_time(dora:failure_creation_time[$__range])) unless min by (app) (min_over_time(dora:failure_resolution_time[$__range]))\n)",
+          "format": "table",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Incidents",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "description": "Number of incidents resolved in the selected time range.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 86,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.17",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "count (\nmin by (app) (min_over_time(dora:failure_creation_time[$__range])) and min by (app) (min_over_time(dora:failure_resolution_time[$__range]))\n)",
+          "format": "table",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Resolved Incidents",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "description": "Number of incident (active and resolved) detected in the selected period of time.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "id": 92,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.17",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "count( min by (app) (min_over_time(dora:failure_creation_time[$__range])) )",
+          "format": "table",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Incidents Occurred",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "description": "Deployments running in the cluster for which it has not been possible to retrieve the commit time metadata from Github. Usually, it is due to mismatching image/github repostiroy names, commit hash not used as image tag or disruption with Github API service. ",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "id": 54,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.17",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PF224BEF3374A25F8"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "count(\n    min(min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])) by (app, image, commit_hash) * 1000 unless min(min_over_time(dora:committime[$__range])) by (app, image, commit_hash) * 1000\n)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Untracked Deployments",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "description": "Deployments now running in the cluster",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "id": 64,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.17",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PF224BEF3374A25F8"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "count(\n    min by (app, image, commit_hash) (min_over_time(dora:deployactive{app!~\".*gitopsdepl.*\"}[15m]))\n)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Current running deployments",
+      "type": "stat"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "hiddenSeries": false,
+      "id": 106,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.17",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Inactive Deployments",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "datasource": null,
@@ -55,7 +463,71 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "text",
+                "color": "rgb(255, 255, 255)",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 5,
+        "x": 0,
+        "y": 4
+      },
+      "id": 38,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.17",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PF224BEF3374A25F8"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "count( count by (image) (count_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])))",
+          "format": "table",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Deployment Frequency",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "rgb(255, 255, 255)",
                 "value": null
               }
             ]
@@ -65,10 +537,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
-        "w": 7,
-        "x": 0,
-        "y": 1
+        "h": 7,
+        "w": 5,
+        "x": 5,
+        "y": 4
       },
       "id": 36,
       "options": {
@@ -98,6 +570,7 @@
           "expr": "avg(\n    (( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app!~\".*gitopsdepl.*\"}[$__range]))))))\n)",
           "format": "table",
           "instant": true,
+          "interval": "",
           "legendFormat": "__auto",
           "range": false,
           "refId": "A"
@@ -111,101 +584,6 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "graph": false,
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 11,
-        "x": 7,
-        "y": 1
-      },
-      "id": 74,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        },
-        "tooltipOptions": {
-          "mode": "single"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
-          "editorMode": "code",
-          "exemplar": true,
-          "expr": "avg(\n    (( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app!~\".*gitopsdepl.*\"}[$__range]))))))\n)",
-          "interval": "",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {},
-            "indexByName": {},
-            "renameByName": {
-              "avg(min_over_time(dora:lead_time[43200s]))": "Lead Time",
-              "avg(min_over_time(dora:lead_time[86400s]))": "Lead Time"
-            }
-          }
-        }
-      ],
-      "type": "timeseries"
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {
             "mode": "thresholds"
           },
           "mappings": [],
@@ -213,21 +591,22 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "text",
+                "color": "rgb(255, 255, 255)",
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "percentunit"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 18,
-        "y": 1
+        "h": 7,
+        "w": 5,
+        "x": 10,
+        "y": 4
       },
-      "id": 64,
+      "id": 90,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -246,21 +625,16 @@
       "pluginVersion": "7.5.17",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "count(\n    min by (app, image, commit_hash) (min_over_time(dora:deployactive{app!~\".*gitopsdepl.*\"}[15m]))\n)",
+          "exemplar": true,
+          "expr": "count( min by (app) (min_over_time(dora:failure_creation_time[$__range])) )\n/ \n( \ncount( count by (image) (count_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])))\n+ \n(count(min by (image) (min_over_time(dora:deployinactive[$__range]))) OR on() vector(0))\n)",
           "format": "table",
           "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
+          "interval": "",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "title": "Current running deplotyments",
+      "title": "Change Failure Rate",
       "type": "stat"
     },
     {
@@ -271,26 +645,26 @@
             "mode": "thresholds"
           },
           "mappings": [],
-          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "text",
+                "color": "rgb(255, 255, 255)",
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "s"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
-        "w": 7,
-        "x": 0,
-        "y": 6
+        "h": 7,
+        "w": 5,
+        "x": 15,
+        "y": 4
       },
-      "id": 38,
+      "id": 84,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -298,7 +672,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
-            "last"
+            "lastNotNull"
           ],
           "fields": "",
           "values": false
@@ -309,21 +683,53 @@
       "pluginVersion": "7.5.17",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "count(count_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]))",
+          "exemplar": true,
+          "expr": "avg(min by (app) (min_over_time(dora:failure_resolution_time[$__range])) - min by (app) (min_over_time(dora:failure_creation_time[$__range])))",
+          "format": "table",
           "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
+          "interval": "",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "title": "Deployment Frequency",
+      "title": "Mean Time To Restore",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "app",
+                "Value"
+              ]
+            }
+          }
+        }
+      ],
       "type": "stat"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 26,
+        "w": 4,
+        "x": 20,
+        "y": 4
+      },
+      "id": 98,
+      "options": {
+        "content": "**DEPLOYMENT FREQUENCY**\n\nTracks the number of successfull deployments over time. Here is displayed as the total count in the selected time range.\n\nData here is obtained from the Openshift cluster deployments metadata. \n\n**LEAD TIME FOR CHANGE**\n\nMeasures the time it takes for a code commit to successfully make it to production.\nHere is shown the average value of all successfull deployments in the selected time range.\n\nData here is obtained from the cluster deployments and Github's commit timestamps.\n\n**Change Failure Rate**\n\nDetermines the changes that lead to failures after they reach production.\nIt is calculated by dividing the number of failed deployments in production by the total number of product deployments.\n\nData here is obtained from PagerDuty.\n\n**MEAN TIME TO RESTORE**\n\nDescribes the average time to recover from a failed deployment or an incident.\nIt is calculated by obtaining the difference in time between an incident creation time and it resolution time.\n\nData here is obtained from PagerDuty.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.5.17",
+      "timeFrom": null,
+      "timeShift": null,
+      "transparent": true,
+      "type": "text"
     },
     {
       "datasource": null,
@@ -372,16 +778,16 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
-        "w": 11,
-        "x": 7,
-        "y": 6
+        "h": 8,
+        "w": 10,
+        "x": 0,
+        "y": 11
       },
       "id": 76,
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "list",
+          "displayMode": "hidden",
           "placement": "bottom",
           "showLegend": false
         },
@@ -406,6 +812,7 @@
           "refId": "A"
         }
       ],
+      "title": "Deployment Frequency",
       "transformations": [
         {
           "id": "organize",
@@ -423,6 +830,623 @@
     },
     {
       "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "graph": false,
+              "legend": false,
+              "tooltip": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 10,
+        "y": 11
+      },
+      "id": 96,
+      "options": {
+        "graph": {},
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltipOptions": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.17",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "count( min by (app) (min_over_time(dora:failure_creation_time[$__range])) )\n/ \n( \ncount( count by (image) (count_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])))\n+ \n(count(min by (image) (min_over_time(dora:deployinactive[$__range]))) OR on() vector(0))\n)",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Change Failure Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "points",
+            "fillOpacity": 100,
+            "gradientMode": "none",
+            "hideFrom": {
+              "graph": false,
+              "legend": false,
+              "tooltip": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 2,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 0,
+        "y": 19
+      },
+      "id": 74,
+      "options": {
+        "graph": {},
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltipOptions": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.17",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PF224BEF3374A25F8"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "avg(\n    (( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app!~\".*gitopsdepl.*\"}[$__range]))))))\n)",
+          "interval": "",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Lead Time for Change",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "avg(min_over_time(dora:lead_time[43200s]))": "Lead Time",
+              "avg(min_over_time(dora:lead_time[86400s]))": "Lead Time"
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "graph": false,
+              "legend": false,
+              "tooltip": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 10,
+        "y": 19
+      },
+      "id": 94,
+      "options": {
+        "graph": {},
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltipOptions": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.17",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "avg(min by (app) (min_over_time(dora:failure_resolution_time[$__range])) - min by (app) (min_over_time(dora:failure_creation_time[$__range])))",
+          "format": "time_series",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Meant Time To Restore",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 44,
+      "panels": [],
+      "title": "DORA Data",
+      "type": "row"
+    },
+    {
+      "datasource": null,
+      "description": "Show the recents deployments detected in the last 7 days, regardless of the time range selected.\n",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "filterable": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_hash"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 529
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "app"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 355
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "id": 68,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "7.5.17",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PF224BEF3374A25F8"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "min(min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])) by (app, image, commit_hash) * 1000",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Recent Go-Lives",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": null,
+      "description": "The full list of deployment for which it was not possible to get the related commit metadata",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "filterable": false
+          },
+          "mappings": [],
+          "noValue": "No untracked deployments in the selected time range",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "app"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 355
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_hash"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 531
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
+      "id": 58,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "7.5.17",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PF224BEF3374A25F8"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "    min(min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])) by (app, image, commit_hash) * 1000 unless min(min_over_time(dora:committime[$__range])) by (app, image, commit_hash) * 1000\n",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Untracked deployments",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": null,
+      "description": "Lead Time for Change shown per image. This is the data used to calculate the global average shown above. ",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "filterable": false
+          },
+          "decimals": 2,
+          "mappings": [],
+          "noValue": "No new deployments in the selected time range",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "app"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": null
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "image"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 537
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_hash"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 340
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "id": 42,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "7.5.17",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PF224BEF3374A25F8"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "(( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app!~\".*gitopsdepl.*\"}[$__range]))))))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Lead Time for Change per image",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "container": true,
+              "endpoint": true,
+              "exported_namespace": true,
+              "image": false,
+              "instance": true,
+              "job": true,
+              "namespace": true,
+              "pod": true,
+              "service": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Value": "Lead Time for Change"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": null,
+      "description": "Deployments currently active in the cluster, regardless of the time range selected. ",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -457,17 +1481,29 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 159
+                "value": 473
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_hash"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 345
               }
             ]
           }
         ]
       },
       "gridPos": {
-        "h": 12,
-        "w": 6,
-        "x": 18,
-        "y": 6
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 55
       },
       "id": 66,
       "options": {
@@ -531,231 +1567,7 @@
     },
     {
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "displayMode": "auto",
-            "filterable": false
-          },
-          "decimals": 2,
-          "mappings": [],
-          "noValue": "No new deployments in the selected time range",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "app"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 158
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "image"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 537
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "commit_hash"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 340
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 18,
-        "x": 0,
-        "y": 11
-      },
-      "id": 42,
-      "options": {
-        "footer": {
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "frameIndex": 0,
-        "showHeader": true,
-        "sortBy": []
-      },
-      "pluginVersion": "7.5.17",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "(( min by (app, image, commit_hash)( min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range]) - on (app, image) group_left (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app!~\".*gitopsdepl.*\"}[$__range]))))))",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Lead Time for Change per image",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "__name__": true,
-              "container": true,
-              "endpoint": true,
-              "exported_namespace": true,
-              "image": false,
-              "instance": true,
-              "job": true,
-              "namespace": true,
-              "pod": true,
-              "service": true
-            },
-            "indexByName": {},
-            "renameByName": {
-              "Value": "Lead Time for Change"
-            }
-          }
-        }
-      ],
-      "type": "table"
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "displayMode": "auto",
-            "filterable": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "app"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 160
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 6,
-        "x": 18,
-        "y": 18
-      },
-      "id": 82,
-      "options": {
-        "footer": {
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": []
-      },
-      "pluginVersion": "7.5.17",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "min by (app, image, commit_hash) (min_over_time(dora:deployactive{app!~\".*gitopsdepl.*\"}[1h])) - on (app, image) group_right (commit_hash) (min by (app, image, commit_hash) (min_over_time(dora:committime{app!~\".*gitopsdepl.*\"}[1h])))",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Lead Time for current active deployments",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true
-            },
-            "indexByName": {},
-            "renameByName": {}
-          }
-        }
-      ],
-      "type": "table"
-    },
-    {
-      "datasource": null,
+      "description": "Deployment time gathered for every image detected in the selected time range.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -793,7 +1605,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 147
+                "value": 270
               }
             ]
           },
@@ -808,14 +1620,26 @@
                 "value": "dateTimeAsIso"
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "commit_hash"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 377
+              }
+            ]
           }
         ]
       },
       "gridPos": {
-        "h": 10,
-        "w": 11,
+        "h": 8,
+        "w": 24,
         "x": 0,
-        "y": 20
+        "y": 63
       },
       "id": 46,
       "options": {
@@ -870,178 +1694,7 @@
     },
     {
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 7,
-        "x": 11,
-        "y": 20
-      },
-      "id": 54,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.5.17",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "count(\n    min(min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])) by (app, image, commit_hash) * 1000 unless min(min_over_time(dora:committime[$__range])) by (app, image, commit_hash) * 1000\n)",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Untracked Deployments",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true
-            },
-            "indexByName": {},
-            "renameByName": {}
-          }
-        }
-      ],
-      "type": "stat"
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "displayMode": "auto",
-            "filterable": false
-          },
-          "mappings": [],
-          "noValue": "No untracked deployments in the selected time range",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "app"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 150
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 7,
-        "x": 11,
-        "y": 25
-      },
-      "id": 58,
-      "options": {
-        "footer": {
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": []
-      },
-      "pluginVersion": "7.5.17",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "    min(min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])) by (app, image, commit_hash) * 1000 unless min(min_over_time(dora:committime[$__range])) by (app, image, commit_hash) * 1000\n",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "Value": true
-            },
-            "indexByName": {},
-            "renameByName": {}
-          }
-        }
-      ],
-      "type": "table"
-    },
-    {
-      "datasource": null,
+      "description": "Commit time gathered from Github for any image detected in the cluster in the selected time range",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1099,9 +1752,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 11,
+        "w": 24,
         "x": 0,
-        "y": 30
+        "y": 71
       },
       "id": 48,
       "options": {
@@ -1151,118 +1804,13 @@
       "type": "table"
     },
     {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "displayMode": "auto",
-            "filterable": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "commit_hash"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 266
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "app"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 183
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 13,
-        "x": 11,
-        "y": 30
-      },
-      "id": 68,
-      "options": {
-        "footer": {
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": []
-      },
-      "pluginVersion": "7.5.17",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PF224BEF3374A25F8"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "min(min_over_time(dora:deploytime{app!~\".*gitopsdepl.*\"}[$__range])) by (app, image, commit_hash) * 1000",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Recent Go-Lives",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "Value": true
-            },
-            "indexByName": {},
-            "renameByName": {}
-          }
-        }
-      ],
-      "type": "table"
-    },
-    {
       "collapsed": true,
       "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 79
       },
       "id": 20,
       "panels": [
@@ -1292,7 +1840,7 @@
             "h": 5,
             "w": 6,
             "x": 0,
-            "y": 2
+            "y": 3
           },
           "id": 62,
           "options": {
@@ -1381,7 +1929,7 @@
             "h": 5,
             "w": 12,
             "x": 6,
-            "y": 2
+            "y": 3
           },
           "id": 78,
           "options": {
@@ -1459,7 +2007,7 @@
             "h": 5,
             "w": 6,
             "x": 18,
-            "y": 2
+            "y": 3
           },
           "id": 72,
           "options": {
@@ -1525,7 +2073,7 @@
             "h": 5,
             "w": 6,
             "x": 0,
-            "y": 7
+            "y": 8
           },
           "id": 8,
           "options": {
@@ -1614,7 +2162,7 @@
             "h": 5,
             "w": 12,
             "x": 6,
-            "y": 7
+            "y": 8
           },
           "id": 80,
           "options": {
@@ -1708,7 +2256,7 @@
             "h": 11,
             "w": 18,
             "x": 0,
-            "y": 12
+            "y": 13
           },
           "id": 22,
           "options": {
@@ -1834,7 +2382,7 @@
             "h": 9,
             "w": 12,
             "x": 0,
-            "y": 23
+            "y": 24
           },
           "id": 6,
           "options": {
@@ -1966,7 +2514,7 @@
             "h": 9,
             "w": 12,
             "x": 12,
-            "y": 23
+            "y": 24
           },
           "id": 2,
           "options": {
@@ -2021,7 +2569,7 @@
           "type": "table"
         }
       ],
-      "title": "Metrics by app",
+      "title": "DORA Metrics by Application",
       "type": "row"
     }
   ],
@@ -2083,7 +2631,7 @@
     ]
   },
   "timezone": "browser",
-  "title": "DORA Metrics for StoneSoup",
+  "title": "DORA Metrics for StoneSoup 2",
   "uid": "c47d603cdd3242726e6777d97921da12b72d2dfb",
-  "version": 11
+  "version": 16
 }
