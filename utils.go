@@ -43,14 +43,14 @@ func filterImage(prefixes []string, image string) bool {
 		}
 	}
 
-	klog.V(1).Infof("image %s is filtered out", image)
+	klog.V(3).Infof("image %s is filtered out", image)
 	return false
 }
 
 func excludeImage(excludes []string, image string) bool {
 	for _, prefix := range excludes {
 		if strings.HasPrefix(image, prefix) {
-			klog.V(1).Infof("image %s is excluded", image)
+			klog.V(3).Infof("image %s is excluded", image)
 			return true
 		}
 	}

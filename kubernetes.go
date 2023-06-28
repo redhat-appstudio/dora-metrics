@@ -169,3 +169,12 @@ func (k *KubeClients) waitConfigMapAvailable(name string, namespace string) erro
 		time.Sleep(5 * time.Second)
 	}
 }
+
+func (k *KubeClients) getGHTokenFromSecret(name string, namespace string, dataKey string) (string, error) {
+	ctx := context.TODO()
+	secret, err := k.kubeClient.CoreV1().Secrets(namespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	return string(secret.Data[dataKey]), nil
+}
