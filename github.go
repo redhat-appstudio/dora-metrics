@@ -21,23 +21,35 @@ import (
 
 	"github.com/google/go-github/v48/github"
 	"golang.org/x/oauth2"
+	"k8s.io/klog/v2"
 )
 
 type GithubClient struct {
-	gh *github.Client
+	gh    *github.Client
+	token string
 }
 
 func NewGithubClient() (*GithubClient, error) {
 	key := "GITHUB_TOKEN"
 	val, ok := os.LookupEnv(key)
 	if !ok {
-		fmt.Printf("%s not set\n", key)
+		klog.Errorf("%s not set\n", key)
 		return nil, fmt.Errorf("%s not set", key)
 	}
 	if val == "" {
-		fmt.Printf("%s is empty\n", key)
+		klog.Errorf("%s is empty\n", key)
 	}
 
+	gh_client := &GithubClient{}
+
+	gh := gh_client.InitClient(val)
+	gh_client.gh = gh
+	gh_client.token = val
+
+	return gh_client, nil
+}
+
+func (gc *GithubClient) InitClient(val string) *github.Client {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: val},
@@ -45,10 +57,7 @@ func NewGithubClient() (*GithubClient, error) {
 	tc := oauth2.NewClient(ctx, ts)
 
 	gh := github.NewClient(tc)
-
-	return &GithubClient{
-		gh: gh,
-	}, nil
+	return gh
 }
 
 func (gc *GithubClient) Client() *github.Client {
@@ -77,7 +86,12 @@ func (gc *GithubClient) SearchCommit(hash string, org string) (*github.Commit, e
 }
 
 func (gc *GithubClient) GetCommitFromOrgAndRepo(org string, repo string, hash string) (*github.Commit, error) {
-	commits, _, err := gc.Client().Repositories.GetCommit(context.Background(), org, repo, hash, &github.ListOptions{})
+	searchOrg := org
+	new_org := gc.LookupOrg(repo)
+	if new_org != "" {
+		searchOrg = new_org
+	}
+	commits, _, err := gc.Client().Repositories.GetCommit(context.Background(), searchOrg, repo, hash, &github.ListOptions{})
 
 	if err != nil {
 		//fmt.Println("Can't get ", hash, " use search instead")
@@ -86,4 +100,16 @@ func (gc *GithubClient) GetCommitFromOrgAndRepo(org string, repo string, hash st
 
 	commit := commits.Commit
 	return commit, nil
+}
+
+func (gc *GithubClient) LookupOrg(repo string) string {
+
+	repos := map[string]string{
+		"pipeline-service-exporter": "openshift-pipelines",
+	}
+	val, ok := repos[repo]
+	if !ok {
+		return ""
+	}
+	return val
 }

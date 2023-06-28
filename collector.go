@@ -15,9 +15,11 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"time"
 
+	"github.com/albarbaro/go-pagerduty"
 	"github.com/prometheus/client_golang/prometheus"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -29,21 +31,25 @@ const APP_LABEL string = "app.kubernetes.io/instance"
 
 // Define a struct for you collector that contains pointers to prometheus descriptors for each metric you wish to expose.
 // You can also include fields of other types if they provide utility
-type CommitTimeCollector struct {
-	commitTimeMetric       *prometheus.Desc
-	deployTimeMetric       *prometheus.Desc
-	activeDeploymentMetric *prometheus.Desc
-	githubClient           *GithubClient
-	kubeClient             *KubeClients
-	commitHashSet          map[string]bool
-	gitCache               map[string]*time.Time
-	searchLabel            string
-	imageFilter            []string
-	imageExcludes          []string
+type Collector struct {
+	commitTimeMetric         *prometheus.Desc
+	deployTimeMetric         *prometheus.Desc
+	activeDeploymentMetric   *prometheus.Desc
+	inactiveDeploymentMetric *prometheus.Desc
+	failure_creation_time    *prometheus.Desc
+	failure_resolution_time  *prometheus.Desc
+	githubClient             *GithubClient
+	kubeClient               *KubeClients
+	pagerdutyClient          *pagerduty.Client
+	commitHashSet            map[string]bool
+	gitCache                 map[string]*time.Time
+	searchLabel              string
+	imageFilter              []string
+	imageExcludes            []string
 }
 
 // You must create a constructor for you collector that initializes every descriptor and returns a pointer to the collector
-func NewCommitTimeCollector() (*CommitTimeCollector, error) {
+func NewCommitTimeCollector() (*Collector, error) {
 	// Initialize the github client
 	gh, err := NewGithubClient()
 	if err != nil {
@@ -56,6 +62,8 @@ func NewCommitTimeCollector() (*CommitTimeCollector, error) {
 		return nil, err
 	}
 
+	pagerdutyClient := NewPagedutyClient()
+
 	searchLabel := "app.kubernetes.io/instance"
 	imageFilters := []string{"quay.io/redhat-appstudio/", "quay.io/redhat-appstudio-qe/", "quay.io/stolostrn/", "quay.io/abarbaro/"}
 	imageExcludes := []string{"quay.io/redhat-appstudio/gitopsdepl", "quay.io/redhat-appstudio/user-workload"}
@@ -64,7 +72,7 @@ func NewCommitTimeCollector() (*CommitTimeCollector, error) {
 	klog.V(3).Infof("Using label ", searchLabel)
 	klog.V(3).Infof("Using image filters: ", imageFilters)
 
-	return &CommitTimeCollector{
+	return &Collector{
 		commitTimeMetric: prometheus.NewDesc("dora:committime",
 			"Shows timestamp for a specific commit",
 			[]string{"app", "commit_hash", "image", "namespace"}, nil,
@@ -77,24 +85,37 @@ func NewCommitTimeCollector() (*CommitTimeCollector, error) {
 			"Shows the active deplyment's timestamp in time",
 			[]string{"app", "commit_hash", "image", "namespace"}, nil,
 		),
-		githubClient:  gh,
-		kubeClient:    kubeClient,
-		commitHashSet: map[string]bool{},
-		gitCache:      map[string]*time.Time{},
-		searchLabel:   searchLabel,
-		imageFilter:   imageFilters,
-		imageExcludes: imageExcludes,
+		inactiveDeploymentMetric: prometheus.NewDesc("dora:deployinactive",
+			"Shows the inactive deplyment's timestamp in time",
+			[]string{"app", "commit_hash", "image", "namespace"}, nil,
+		),
+		failure_resolution_time: prometheus.NewDesc("dora:failure_resolution_time",
+			"Shows the failures resolution timestamp in time",
+			[]string{"app", "id"}, nil,
+		),
+		failure_creation_time: prometheus.NewDesc("dora:failure_creation_time",
+			"Shows the failures creation timestamp in time",
+			[]string{"app", "id"}, nil,
+		),
+		githubClient:    gh,
+		kubeClient:      kubeClient,
+		pagerdutyClient: pagerdutyClient,
+		commitHashSet:   map[string]bool{},
+		gitCache:        map[string]*time.Time{},
+		searchLabel:     searchLabel,
+		imageFilter:     imageFilters,
+		imageExcludes:   imageExcludes,
 	}, nil
 }
 
 // Each and every collector must implement the Describe function. It essentially writes all descriptors to the prometheus desc channel.
-func (collector *CommitTimeCollector) Describe(ch chan<- *prometheus.Desc) {
+func (collector *Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- collector.commitTimeMetric
 	ch <- collector.deployTimeMetric
 }
 
 // Collect implements required collect function for all promehteus collectors
-func (collector *CommitTimeCollector) Collect(ch chan<- prometheus.Metric) {
+func (collector *Collector) Collect(ch chan<- prometheus.Metric) {
 
 	// List all deployments having argocd label app.kubernetes.io/instance
 	// Use these deployments to get images and gather deploytime and commit time
@@ -108,6 +129,7 @@ func (collector *CommitTimeCollector) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
+	collector.CollectFailures(ch)
 	// loop through all deployments found
 	for _, depl := range deploymentList.Items {
 		// and get all container's images
@@ -125,7 +147,7 @@ func (collector *CommitTimeCollector) Collect(ch chan<- prometheus.Metric) {
 
 }
 
-func (collector *CommitTimeCollector) CollectCommitTime(ch chan<- prometheus.Metric, depl *appsv1.Deployment, cont *v1.Container) {
+func (collector *Collector) CollectCommitTime(ch chan<- prometheus.Metric, depl *appsv1.Deployment, cont *v1.Container) {
 	// check we have not parsed this image already
 	// get data needed for prometheus labels
 	namespace := depl.Namespace
@@ -144,14 +166,14 @@ func (collector *CommitTimeCollector) CollectCommitTime(ch chan<- prometheus.Met
 			m1 := prometheus.MustNewConstMetric(collector.commitTimeMetric, prometheus.GaugeValue, float64(commitTimeValue.Unix()), component, fields["hash"], cont.Image, namespace)
 			// We let prometheus set the scraping timestamp; if we force-set it to the commit time we risk losing old out-of-bound data
 			ch <- m1
-			klog.V(1).Infof("collected (from cache) committime for %s", cont.Image)
+			klog.V(3).Infof("collected (from cache) committime for %s", cont.Image)
 			return
 		}
 
 		// if the data is not cached, look in github: first try is using org+repo+hash to directly get the data from the repo (we want to avoid searching for a generic hash)
 		commit, err := collector.githubClient.GetCommitFromOrgAndRepo(fields["org"], fields["repo"], fields["hash"])
 		if err != nil {
-			klog.V(2).Infof("Can't find commit time using %s, %s and %s: %s", fields["org"], fields["repo"], fields["hash"], err)
+			klog.V(3).Infof("Can't find commit time using %s, %s and %s: %s", fields["org"], fields["repo"], fields["hash"], err)
 		} else {
 			m1 := prometheus.MustNewConstMetric(collector.commitTimeMetric, prometheus.GaugeValue, float64(commit.Author.Date.Unix()), component, fields["hash"], cont.Image, namespace)
 			// We let prometheus set the scraping timestamp; if we force-set it to the commit time we risk losing old out-of-bound data
@@ -165,7 +187,7 @@ func (collector *CommitTimeCollector) CollectCommitTime(ch chan<- prometheus.Met
 		if err != nil {
 			// try again once
 			commit, err = collector.githubClient.SearchCommit(fields["hash"], fields["org"])
-			klog.V(1).Infof("Retrying search: %s - %s - %s: %s", fields["repo"], fields["hash"], fields["org"], err)
+			klog.V(3).Infof("Retrying search: %s - %s - %s: %s", fields["repo"], fields["hash"], fields["org"], err)
 		}
 
 		if err != nil {
@@ -185,7 +207,7 @@ func (collector *CommitTimeCollector) CollectCommitTime(ch chan<- prometheus.Met
 
 }
 
-func (collector *CommitTimeCollector) CollectDeployTime(ch chan<- prometheus.Metric, depl *appsv1.Deployment, cont *v1.Container) {
+func (collector *Collector) CollectDeployTime(ch chan<- prometheus.Metric, depl *appsv1.Deployment, cont *v1.Container) {
 	// check we have not parsed this image already
 	_, ok := collector.commitHashSet[cont.Image]
 	if !ok {
@@ -196,6 +218,7 @@ func (collector *CommitTimeCollector) CollectDeployTime(ch chan<- prometheus.Met
 		fields := reSubMatchMap(imageRegex, cont.Image)
 		// If the deployment is active we also collect the deploy time metric using the deployment creation timestamp
 		isActive, _ := collector.kubeClient.IsDeploymentActiveSince(depl)
+
 		if isActive {
 			creationTime, err := collector.kubeClient.GetDeploymentReplicaSetCreationTime(namespace, depl.Name, cont.Image)
 			if err != nil {
@@ -219,7 +242,51 @@ func (collector *CommitTimeCollector) CollectDeployTime(ch chan<- prometheus.Met
 			}
 
 		} else {
-			klog.V(1).Infof("%s deploy time not collected because deployment is not in active state.\n", cont.Image)
+			m2 := prometheus.MustNewConstMetric(collector.inactiveDeploymentMetric, prometheus.GaugeValue, float64(time.Now().Unix()), component, fields["hash"], cont.Image, namespace)
+			ch <- m2
+			klog.V(3).Infof("collected Inactive deployment for %s", cont.Image)
 		}
+	}
+}
+
+func (collector *Collector) CollectFailures(ch chan<- prometheus.Metric) {
+	klog.V(1).Info("Collecting failures...")
+	incidents, err := collector.pagerdutyClient.ListIncidentsWithContext(context.TODO(), pagerduty.ListIncidentsOptions{ServiceIDs: []string{"PL93A8P"}})
+
+	if err != nil {
+		klog.Error(err)
+		return
+	}
+	for _, inc := range incidents.Incidents {
+		layout := "2006-01-02T15:04:05Z"
+
+		creationTime, err := time.Parse(layout, inc.CreatedAt)
+		if err != nil {
+			klog.Error("error converting time for %s", inc.ID)
+		}
+		isOkToIngest := creationTime.After(time.Now().Add(-5 * time.Minute))
+
+		if isOkToIngest {
+			m2 := prometheus.MustNewConstMetric(collector.failure_creation_time, prometheus.GaugeValue, float64(creationTime.Unix()), inc.ID, "global")
+			m2 = prometheus.NewMetricWithTimestamp(creationTime, m2)
+			ch <- m2
+			klog.V(3).Infof("collected failure creation time for %s", inc.ID)
+		}
+
+		if inc.Status == "resolved" {
+			resTime, err := time.Parse(layout, inc.ResolvedAt)
+			if err != nil {
+				klog.Error("error converting time for %s", inc.ID, err)
+			}
+			isOkToIngest := resTime.After(time.Now().Add(-5 * time.Minute))
+
+			if isOkToIngest {
+				m2 := prometheus.MustNewConstMetric(collector.failure_resolution_time, prometheus.GaugeValue, float64(resTime.Unix()), inc.ID, "global")
+				m2 = prometheus.NewMetricWithTimestamp(resTime, m2)
+				ch <- m2
+				klog.V(3).Infof("collected failure resolution time for %s", inc.ID)
+			}
+		}
+
 	}
 }

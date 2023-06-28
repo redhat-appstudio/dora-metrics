@@ -28,5 +28,11 @@ spec:
                   name: exporters-secret
                   key: github
                   optional: false
+            - name: PAGERDUTY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: exporters-secret
+                  key: pager-duty-token
+                  optional: false
       serviceAccountName: dora-metrics-exporter-sa
       serviceAccount: dora-metrics-exporter-sa
