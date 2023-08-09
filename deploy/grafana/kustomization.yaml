@@ -1,9 +1,12 @@
 kind: Kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 
-namespace: grafana-operator-system
+namespace: dara-metrics
 
 configMapGenerator:
-  - name: grafana-dashboard-for-dora-metrics
+  - name: grafana-dashboard-dora-metrics
     files:
       - dashboards/dora-dashboard.json
+
+resources:
+  - dashboard.yaml
