@@ -34,7 +34,7 @@ func main() {
 	reg := prometheus.NewRegistry()
 	foo, err := NewCommitTimeCollector()
 	if err != nil {
-		klog.Errorf("can't find openshift cluster: %s", err)
+		klog.Errorf("can't find the openshift cluster: %s", err)
 		return
 	}
 	reg.MustRegister(foo)
