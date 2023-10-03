@@ -2342,8 +2342,8 @@ data:
         ]
       },
       "timezone": "",
-      "title": "Playground",
-      "uid": "playground",
+      "title": "RHTAP dora metrics",
+      "uid": "rhtapdorametrics",
       "version": 1,
       "weekStart": ""
     }
