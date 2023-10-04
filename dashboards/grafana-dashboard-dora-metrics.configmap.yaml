@@ -1696,19 +1696,37 @@ data:
         "list": [
           {
             "current": {
-              "selected": true,
+              "selected": false,
               "text": "rhtap-observatorium-stage",
               "value": "rhtap-observatorium-stage"
             },
             "hide": 0,
             "includeAll": false,
             "multi": false,
-            "name": "datasource",
+            "name": "datasource_staging",
             "options": [],
             "query": "prometheus",
             "queryValue": "",
             "refresh": 1,
-            "regex": "/^rhtap-/",
+            "regex": "/^rhtap-observatorium/",
+            "skipUrlSync": false,
+            "type": "datasource"
+          },
+          {
+            "current": {
+              "selected": true,
+              "text": "rhtap-observatorium-production",
+              "value": "rhtap-observatorium-production"
+            },
+            "hide": 0,
+            "includeAll": false,
+            "multi": false,
+            "name": "datasource_production",
+            "options": [],
+            "query": "prometheus",
+            "queryValue": "",
+            "refresh": 1,
+            "regex": "/^rhtap-observatorium-/",
             "skipUrlSync": false,
             "type": "datasource"
           }
@@ -1746,7 +1764,7 @@ data:
       "timezone": "",
       "title": "RHTAP dora metrics",
       "uid": "rhtapdorametrics",
-      "version": 3,
+      "version": 4,
       "weekStart": ""
     }
 kind: ConfigMap
