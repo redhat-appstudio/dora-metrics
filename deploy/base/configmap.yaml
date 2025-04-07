@@ -4,7 +4,7 @@ metadata:
   name: exporters-config
   namespace: dora-metrics
 data:
-  imageFilters: '["quay.io/redhat-appstudio/", "quay.io/redhat-appstudio-qe/", "quay.io/stolostron/"]'
+  imageFilters: '["quay.io/konflux-ci/", "quay.io/redhat-appstudio/", "quay.io/redhat-appstudio-qe/", "quay.io/stolostron/"]'
   searchLabel: "app.kubernetes.io/instance"
   imageExclude: '["quay.io/redhat-appstudio/gitopsdepl", "quay.io/redhat-appstudio/user-workload"]'
   verbosity: '1'
