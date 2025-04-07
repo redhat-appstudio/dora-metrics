@@ -65,7 +65,7 @@ func NewCommitTimeCollector() (*Collector, error) {
 	pagerdutyClient := NewPagedutyClient()
 
 	searchLabel := "app.kubernetes.io/instance"
-	imageFilters := []string{"quay.io/redhat-appstudio/", "quay.io/redhat-appstudio-qe/", "quay.io/stolostrn/", "quay.io/abarbaro/"}
+	imageFilters := []string{"quay.io/konflux-ci/", "quay.io/redhat-appstudio/", "quay.io/redhat-appstudio-qe/", "quay.io/stolostrn/", "quay.io/abarbaro/"}
 	imageExcludes := []string{"quay.io/redhat-appstudio/gitopsdepl", "quay.io/redhat-appstudio/user-workload"}
 	flag.Lookup("v").Value.Set("1")
 
