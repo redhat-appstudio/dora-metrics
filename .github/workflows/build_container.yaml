@@ -9,12 +9,15 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
       - name: Build Image
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
           image: dora-metrics
           tags: latest ${{ github.sha }}
+          archs: amd64, ppc64le
           context: .
           dockerfiles: |
             ./Dockerfile
