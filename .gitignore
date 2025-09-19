@@ -12,5 +12,46 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-vendor/
+# vendor/
+
+# Go workspace file
+go.work
+
+# Build output directory
+bin/
+dist/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Log files
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Coverage reports
+coverage.out
+coverage.html
+
+# Air (live reload) temporary files
+tmp/

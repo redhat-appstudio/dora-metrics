@@ -1,0 +1,88 @@
+package integrations
+
+import (
+	"context"
+	"fmt"
+	"sync"
+)
+
+// Manager handles all integrations in the system
+type Manager struct {
+	integrations map[string]Integration
+	mu           sync.RWMutex
+}
+
+// Integration represents a generic integration interface
+type Integration interface {
+	IsEnabled() bool
+	SendIncidentEvent(ctx context.Context, incident IncidentData, count int) error
+	CloseIncident(ctx context.Context, incidentID string) error
+}
+
+var (
+	globalManager *Manager
+	once          sync.Once
+)
+
+// GetManager returns the global integration manager instance
+func GetManager() *Manager {
+	once.Do(func() {
+		globalManager = &Manager{
+			integrations: make(map[string]Integration),
+		}
+	})
+	return globalManager
+}
+
+// RegisterIntegration registers a new integration
+func (m *Manager) RegisterIntegration(name string, integration Integration) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.integrations[name] = integration
+}
+
+// GetIntegration returns an integration by name
+func (m *Manager) GetIntegration(name string) (Integration, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	integration, exists := m.integrations[name]
+	if !exists {
+		return nil, fmt.Errorf("integration %s not found", name)
+	}
+	return integration, nil
+}
+
+// SendIncidentEventToDevLake sends an incident event to DevLake
+func (m *Manager) SendIncidentEventToDevLake(ctx context.Context, incident IncidentData, count int) error {
+	integration, err := m.GetIntegration("devlake")
+	if err != nil {
+		return fmt.Errorf("failed to get devlake integration: %w", err)
+	}
+
+	if !integration.IsEnabled() {
+		return fmt.Errorf("devlake integration is disabled")
+	}
+
+	return integration.SendIncidentEvent(ctx, incident, count)
+}
+
+// CloseIncidentInDevLake closes an incident in DevLake
+func (m *Manager) CloseIncidentInDevLake(ctx context.Context, incidentID string) error {
+	integration, err := m.GetIntegration("devlake")
+	if err != nil {
+		return fmt.Errorf("failed to get devlake integration: %w", err)
+	}
+
+	if !integration.IsEnabled() {
+		return fmt.Errorf("devlake integration is disabled")
+	}
+
+	return integration.CloseIncident(ctx, incidentID)
+}
+
+// RegisterDevLakeIntegration registers a DevLake integration
+func (m *Manager) RegisterDevLakeIntegration(baseURL string, projectID string, enabled bool) {
+	devlakeIntegration := NewDevLakeIntegration(baseURL, projectID, enabled, 30) // 30 second timeout
+	m.RegisterIntegration("devlake", devlakeIntegration)
+}
