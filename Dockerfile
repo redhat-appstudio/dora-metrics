@@ -1,5 +1,5 @@
 # Build stage
-FROM registry.redhat.io/ubi9/go-toolset:1.24 AS builder
+FROM golang:1.24-alpine AS builder
 
 # Set working directory
 WORKDIR /workspace
@@ -14,15 +14,13 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -buildvcs=false -o main ./cmd/server
 
 # Final stage
 FROM registry.redhat.io/ubi9/ubi-minimal:9.5
 
-# Install ca-certificates for HTTPS requests
-RUN microdnf update -y && \
-    microdnf install -y ca-certificates && \
-    microdnf clean all
+# Install ca-certificates for HTTPS requests and bind-tools for nslookup and netcat
+RUN apk --no-cache add ca-certificates bind-tools netcat-openbsd
 
 # Create non-root user
 RUN groupadd -g 1001 dora-metrics && \

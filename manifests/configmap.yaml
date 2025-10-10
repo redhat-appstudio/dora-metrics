@@ -22,7 +22,7 @@ data:
       interval: "1h"
 
     argocd:
-      enabled: true
+      enabled: false
       namespaces:
         - konflux-public-production
         - argocd
@@ -63,7 +63,7 @@ data:
     storage:
       redis:
         enabled: true
-        address: "redis-service:6379"  # Will be overridden by REDIS_HOST:REDIS_PORT env vars
+        address: "localhost:6379"  # Will be overridden by REDIS_HOST:REDIS_PORT env vars
         password: ""  # Will be overridden by REDIS_PASSWORD env var
         database: 0
         key_prefix: "dora-metrics"
