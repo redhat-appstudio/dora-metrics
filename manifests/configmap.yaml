@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dora-metrics-config
+  namespace: konflux-dora-metrics
+  labels:
+    app: dora-metrics
+    app.kubernetes.io/name: dora-metrics
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: dora-metrics
+data:
+  config.yaml: |
+    server:
+      port: "8080"
+      environment: "production"
+      log_level: "info"
+
+    webrca:
+      enabled: true
+      api_url: "https://api.openshift.com/api/web-rca/v1/incidents"
+      interval: "1h"
+
+    argocd:
+      enabled: true
+      namespaces:
+        - konflux-public-production
+        - argocd
+      components_to_monitor:
+        - build-service
+        - crossplane-control-plane
+        - dora-metrics
+        - enterprise-contract
+        - etcd-defrag
+        - etcd-shield
+        - image-controller
+        - integration
+        - internal-services
+        - konflux-info
+        - konflux-ui
+        - kubelet-config
+        - kueue
+        - kyverno
+        - mintmaker
+        - multi-platform-controller
+        - namespace-lister
+        - notification-controller
+        - project-controller
+        - release
+        - smee-client
+      known_clusters:
+        - kflux-ocp-p01
+        - kflux-osp-p01
+        - kflux-prd-es01
+        - kflux-prd-rh02
+        - kflux-prd-rh03
+        - kflux-rhel-p01
+        - stone-prd-host1
+        - stone-prd-rh01
+        - stone-prod-p01
+        - stone-prod-p02
+
+    storage:
+      redis:
+        enabled: true
+        address: "redis-service:6379"  # Will be overridden by REDIS_HOST:REDIS_PORT env vars
+        password: ""  # Will be overridden by REDIS_PASSWORD env var
+        database: 0
+        key_prefix: "dora-metrics"
+
+    integration:
+      devlake:
+        enabled: true
+        base_url: "https://konflux-devlake-ui-konflux-devlake.apps.rosa.kflux-c-prd-i01.7hyu.p3.openshiftapps.com"
+        project_id: "1"
+        timeout_seconds: 30

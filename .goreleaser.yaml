@@ -1,0 +1,95 @@
+# Go Releaser configuration for DORA Metrics Server
+# This file configures how Go Releaser builds and releases the application
+
+# Build configuration
+builds:
+  - id: dora-metrics
+    binary: dora-metrics
+    main: ./cmd/server
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -X main.BuildVersion={{.Version}}
+      - -X main.BuildTime={{.Date}}
+      - -X main.BuildCommit={{.ShortCommit}}
+    env:
+      - CGO_ENABLED=0
+
+# Archive configuration
+archives:
+  - id: dora-metrics
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format: tar.gz
+    replacements:
+      darwin: macos
+      amd64: intel
+      arm64: arm
+
+# Checksum configuration
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+
+# Release configuration
+release:
+  github:
+    owner: flacatus
+    name: dora-metrics
+  draft: false
+  prerelease: false
+  mode: replace
+  header: |
+    ## DORA Metrics Server {{ .Version }}
+    
+    A professional Go Fiber server with dual monitoring capabilities:
+    - WebRCA incident monitoring
+    - ArgoCD application monitoring
+    
+    ### Installation
+    
+    Download the appropriate binary for your platform from the assets below.
+    
+    ### Usage
+    
+    ```bash
+    # Show help
+    ./dora-metrics -help
+    
+    # Show version
+    ./dora-metrics -version
+    
+    # Run with WebRCA monitoring
+    ./dora-metrics -webrca-enabled=true -offline-token your-token
+    
+    # Run with ArgoCD monitoring
+    ./dora-metrics -argocd-enabled=true -argocd-namespaces argocd,flags
+    
+    # Run both monitoring services
+    ./dora-metrics -webrca-enabled=true -argocd-enabled=true -offline-token your-token
+    ```
+
+# Changelog configuration
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^build:'
+
+# Snapshots configuration
+snapshot:
+  name_template: "{{ .Tag }}-next"
+  checksum:
+    name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+
+# Docker configuration (optional)
+# docker:
+#   image_templates:
+#     - "ghcr.io/flacatus/dora-metrics:{{ .Version }}"
+#     - "ghcr.io/flacatus/dora-metrics:latest"

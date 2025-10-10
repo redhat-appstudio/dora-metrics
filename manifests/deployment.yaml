@@ -1,0 +1,181 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dora-metrics
+  namespace: konflux-dora-metrics
+  labels:
+    app: dora-metrics
+    app.kubernetes.io/name: dora-metrics
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: server
+    app.kubernetes.io/part-of: dora-metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dora-metrics
+  template:
+    metadata:
+      labels:
+        app: dora-metrics
+        app.kubernetes.io/name: dora-metrics
+        app.kubernetes.io/version: "1.0.0"
+        app.kubernetes.io/component: server
+        app.kubernetes.io/part-of: dora-metrics
+    spec:
+      serviceAccountName: dora-metrics
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: dora-metrics
+        image: quay.io/redhat-appstudio/dora-metrics:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        env:
+        - name: PORT
+          value: "8080"
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dora-metrics-secrets
+              key: redis-password
+              optional: true
+        - name: OFFLINE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: dora-metrics-secrets
+              key: offline-token
+              optional: true
+
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/configs
+          readOnly: true
+      - name: redis
+        image: redis:7.0-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 6379
+          name: redis
+          protocol: TCP
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dora-metrics-secrets
+              key: redis-password
+              optional: true
+        command:
+        - sh
+        - -c
+        - |
+          if [ -n "$REDIS_PASSWORD" ]; then
+            redis-server --appendonly yes --requirepass "$REDIS_PASSWORD"
+          else
+            redis-server --appendonly yes
+          fi
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - |
+              if [ -n "$REDIS_PASSWORD" ]; then
+                redis-cli -a "$REDIS_PASSWORD" ping
+              else
+                redis-cli ping
+              fi
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - |
+              if [ -n "$REDIS_PASSWORD" ]; then
+                redis-cli -a "$REDIS_PASSWORD" ping
+              else
+                redis-cli ping
+              fi
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      volumes:
+      - name: config-volume
+        configMap:
+          name: dora-metrics-config
+      - name: redis-data
+        emptyDir: {}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: konflux-dora-metrics
+  labels:
+    app: redis
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/version: "7.0"
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: dora-metrics
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+    protocol: TCP
+    name: redis
+  selector:
+    app: dora-metrics

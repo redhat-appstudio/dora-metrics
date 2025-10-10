@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: konflux-dora-metrics
+  labels:
+    name: konflux-dora-metrics
+    app.kubernetes.io/name: dora-metrics
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: dora-metrics
+  annotations:
+    openshift.io/description: "Namespace for DORA Metrics application"
+    openshift.io/display-name: "DORA Metrics"

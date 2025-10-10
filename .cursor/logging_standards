@@ -1,0 +1,73 @@
+# DORA Metrics - Logging Standards
+
+## General Logging Principles
+
+- **Descriptive messages**: Include relevant context directly in the message
+- **Professional language**: Use enterprise-appropriate terminology
+- **Consistent structure**: Maintain clear, readable message formats
+
+## Log Message Format
+
+```go
+// ✅ GOOD - Descriptive and professional
+logger.Infof("ArgoCD application monitoring enabled - Namespaces: %v, Known clusters: %d", namespaces, count)
+logger.Errorf("Failed to create ArgoCD watch for namespace %s: %v", namespace, err)
+logger.Debugf("Processing ArgoCD event: %s", event.Type)
+
+// ❌ BAD - Prefix format
+logger.Infof("Server ArgoCD - Application monitoring enabled")
+logger.Errorf("ArgoCD Watch - Failed to create watch")
+```
+
+## Component-Specific Guidelines
+
+### Server
+
+- Use clear, direct language about server operations
+- Include relevant configuration details
+- Example: `"Redis storage client initialized successfully - Address: %s"`
+
+### ArgoCD Messages
+
+- Include namespace and application context
+- Specify operation type (watch, event, monitoring)
+- Example: `"Starting ArgoCD watch for namespace: %s"`
+- Example: `"ArgoCD application monitoring enabled - Namespaces: %v"`
+
+### WebRCA Messages
+
+- Focus on incident monitoring operations
+- Include timing and count information
+- Example: `"WebRCA incident check completed: %d total items in %v"`
+- Example: `"Starting WebRCA incident monitoring - interval: %v"`
+
+### Storage Messages
+
+- Include operation type and target details
+- Example: `"Redis storage client connected successfully to %s"`
+- Example: `"Stored last deployment for %s/%s (revision: %s)"`
+
+## Error Messages
+
+- Be specific about what failed and why
+- Include relevant context (namespace, application, etc.)
+- Example: `"Failed to initialize ArgoCD monitor: %v"`
+- Example: `"ArgoCD monitoring enabled but namespaces not specified in config.yaml"`
+
+## Debug Messages
+
+- Include operation context
+- Example: `"Processing ArgoCD event: %s"`
+- Example: `"Received ArgoCD event from namespace %s: %s"`
+
+## Warning Messages
+
+- Explain the condition and potential impact
+- Example: `"WebRCA monitoring enabled but OFFLINE_TOKEN environment variable not set"`
+- Example: `"ArgoCD watch channel closed for namespace %s, reconnecting instantly..."`
+
+## Info Messages
+
+- Provide clear status updates with relevant details
+- Example: `"ArgoCD application monitoring started"`
+- Example: `"Starting on port %s"`

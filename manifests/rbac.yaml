@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dora-metrics
+  namespace: konflux-dora-metrics
+  labels:
+    app: dora-metrics
+    app.kubernetes.io/name: dora-metrics
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: dora-metrics
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: dora-metrics
+  namespace: konflux-dora-metrics
+  labels:
+    app: dora-metrics
+    app.kubernetes.io/name: dora-metrics
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: dora-metrics
+rules:
+# Permissions for monitoring ArgoCD applications
+- apiGroups: ["argoproj.io"]
+  resources: ["applications"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["argoproj.io"]
+  resources: ["appprojects"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dora-metrics
+  namespace: konflux-dora-metrics
+  labels:
+    app: dora-metrics
+    app.kubernetes.io/name: dora-metrics
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: dora-metrics
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dora-metrics
+subjects:
+- kind: ServiceAccount
+  name: dora-metrics
+  namespace: konflux-dora-metrics
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dora-metrics-cluster
+  labels:
+    app: dora-metrics
+    app.kubernetes.io/name: dora-metrics
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: dora-metrics
+rules:
+# Permissions for monitoring ArgoCD applications across all namespaces
+- apiGroups: ["argoproj.io"]
+  resources: ["applications"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["argoproj.io"]
+  resources: ["appprojects"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dora-metrics-cluster
+  labels:
+    app: dora-metrics
+    app.kubernetes.io/name: dora-metrics
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: dora-metrics
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: dora-metrics-cluster
+subjects:
+- kind: ServiceAccount
+  name: dora-metrics
+  namespace: konflux-dora-metrics
