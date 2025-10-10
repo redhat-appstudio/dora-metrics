@@ -59,6 +59,12 @@ spec:
               name: dora-metrics-secrets
               key: offline-token
               optional: true
+        - name: DEVLAKE_WEBHOOK_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: dora-metrics-secrets
+              key: devlake-webhook-token
+              optional: true
 
         resources:
           requests:

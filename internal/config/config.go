@@ -122,7 +122,7 @@ func LoadWithFlags(flgs Flags) *Config {
 	redisHost := getEnv("REDIS_HOST", "")
 	redisPort := getEnv("REDIS_PORT", "")
 	redisPassword := getEnv("REDIS_PASSWORD", redisConfig.Password)
-	
+
 	// Build Redis address from environment variables or use YAML config
 	redisAddress := redisConfig.Address
 	if redisHost != "" && redisPort != "" {
@@ -149,11 +149,11 @@ func LoadWithFlags(flgs Flags) *Config {
 		},
 		Storage: StorageConfig{
 			Redis: RedisYAMLConfig{
-				Enabled:    redisConfig.Enabled,
-				Address:    redisAddress,
-				Password:   redisPassword,
-				Database:   redisConfig.Database,
-				KeyPrefix:  redisConfig.KeyPrefix,
+				Enabled:   redisConfig.Enabled,
+				Address:   redisAddress,
+				Password:  redisPassword,
+				Database:  redisConfig.Database,
+				KeyPrefix: redisConfig.KeyPrefix,
 			},
 		},
 		Integration: IntegrationConfig{

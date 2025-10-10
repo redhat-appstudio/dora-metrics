@@ -54,11 +54,13 @@ Before deploying, you need to update the `secrets.yaml` file with your actual va
 
 1. **WebRCA Offline Token**: Get your offline token from the Red Hat API
 2. **Redis Password**: If your Redis instance requires authentication
+3. **DevLake Webhook Token**: Get your DevLake webhook token for data integration
 
 ```bash
 # Encode your values
 echo -n "your-offline-token" | base64
 echo -n "your-redis-password" | base64
+echo -n "your-devlake-webhook-token" | base64
 
 # Update secrets.yaml with the encoded values
 # Default Redis password is "dora-metrics-redis" (already encoded in secrets.yaml)
