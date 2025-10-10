@@ -92,23 +92,23 @@ type DevLakeIssue struct {
 
 // DevLakeDeploymentCommit represents a deployment commit in DevLake format
 type DevLakeDeploymentCommit struct {
-	RepoURL      string    `json:"repoUrl"`
-	RefName      string    `json:"refName"`
-	StartedDate  time.Time `json:"startedDate"`
-	FinishedDate time.Time `json:"finishedDate"`
-	CommitSHA    string    `json:"commitSha"`
-	CommitMsg    string    `json:"commitMsg"`
-	Result       string    `json:"result"`
-	DisplayTitle *string   `json:"displayTitle"`
-	Name         *string   `json:"name"`
+	RepoURL      string  `json:"repoUrl"`
+	RefName      string  `json:"refName"`
+	StartedDate  string  `json:"startedDate"`
+	FinishedDate string  `json:"finishedDate"`
+	CommitSHA    string  `json:"commitSha"`
+	CommitMsg    string  `json:"commitMsg"`
+	Result       string  `json:"result"`
+	DisplayTitle *string `json:"displayTitle"`
+	Name         *string `json:"name"`
 }
 
 // DevLakeCICDDeployment represents a CICD deployment in DevLake format
 type DevLakeCICDDeployment struct {
 	ID                string                    `json:"id"`
-	CreatedDate       *time.Time                `json:"createdDate"`
-	StartedDate       time.Time                 `json:"startedDate"`
-	FinishedDate      time.Time                 `json:"finishedDate"`
+	CreatedDate       *string                   `json:"createdDate"`
+	StartedDate       string                    `json:"startedDate"`
+	FinishedDate      string                    `json:"finishedDate"`
 	Environment       string                    `json:"environment"`
 	Result            string                    `json:"result"`
 	DisplayTitle      *string                   `json:"displayTitle"`
@@ -178,7 +178,7 @@ func (d *DevLakeIntegration) SendIncidentEvent(ctx context.Context, incident Inc
 	devlakeStatus, originalStatus := d.mapToDevLakeStatus(webrcaStatus, isResolved)
 
 	// Use the actual created date from WebRCA
-	createdDate := d.formatDevLakeDate(incident.GetCreatedAt())
+	createdDate := d.FormatDevLakeDate(incident.GetCreatedAt())
 
 	// Debug logging for date formatting
 	logger.Debugf("Formatted dates - CreatedDate: %s", createdDate)
@@ -208,13 +208,13 @@ func (d *DevLakeIntegration) SendIncidentEvent(ctx context.Context, incident Inc
 		logger.Debugf("Incident %s is resolved/closed, setting ResolutionDate", incident.GetIncidentID())
 		// Use actual resolution time if available, otherwise fall back to updated time
 		if resolvedAt := incident.GetResolvedAt(); resolvedAt != nil && !resolvedAt.IsZero() {
-			devlakeIssue.ResolutionDate = d.formatDevLakeDate(*resolvedAt)
+			devlakeIssue.ResolutionDate = d.FormatDevLakeDate(*resolvedAt)
 			logger.Debugf("Using resolved_at for ResolutionDate: %s", devlakeIssue.ResolutionDate)
 		} else {
 			// Fallback to updated time if no resolution time available
 			updatedAt := incident.GetUpdatedAt()
 			if !updatedAt.IsZero() {
-				devlakeIssue.ResolutionDate = d.formatDevLakeDate(updatedAt)
+				devlakeIssue.ResolutionDate = d.FormatDevLakeDate(updatedAt)
 				logger.Debugf("Using updated_at for ResolutionDate (resolved_at is nil or zero): %s", devlakeIssue.ResolutionDate)
 			} else {
 				// If both resolved_at and updated_at are zero, don't set ResolutionDate
@@ -322,14 +322,58 @@ func (d *DevLakeIntegration) CloseIncident(ctx context.Context, incidentID strin
 }
 
 // SendDeploymentEvent sends an ArgoCD deployment event to DevLake
-func (d *DevLakeIntegration) SendDeploymentEvent(ctx context.Context, appName, cluster, component, revision string) error {
+func (d *DevLakeIntegration) SendDeploymentEvent(ctx context.Context, deployment DevLakeCICDDeployment) error {
 	if !d.enabled {
 		return fmt.Errorf("devlake integration is disabled")
 	}
 
-	// For now, just log the deployment event
-	logger.Debugf("DevLake deployment event: %s/%s/%s (revision: %s)",
-		appName, cluster, component, revision)
+	// Get DevLake token from environment
+	token, err := d.getDevLakeToken()
+	if err != nil {
+		return fmt.Errorf("failed to get DevLake token: %w", err)
+	}
+
+	// Send HTTP POST to DevLake deployments endpoint
+	url := fmt.Sprintf("%s/api/rest/plugins/webhook/connections/%s/deployments", d.baseURL, d.projectID)
+
+	// Convert deployment to JSON
+	payload, err := json.Marshal(deployment)
+	if err != nil {
+		return fmt.Errorf("failed to marshal DevLake deployment: %w", err)
+	}
+
+	logger.Debugf("DevLake deployment API URL: %s", url)
+	logger.Debugf("DevLake deployment payload: %s", string(payload))
+
+	// Create HTTP request
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(payload))
+	if err != nil {
+		return fmt.Errorf("failed to create DevLake deployment request: %w", err)
+	}
+
+	// Set headers
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	// Send request
+	client := &http.Client{Timeout: time.Duration(d.timeoutSeconds) * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send deployment request to DevLake: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		// Read response body for error details
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("DevLake deployment API returned error status %d (failed to read response body: %v)", resp.StatusCode, err)
+		}
+		return fmt.Errorf("DevLake deployment API returned error status %d: %s", resp.StatusCode, string(body))
+	}
+
+	logger.Infof("DevLake deployment sent successfully: %s (ID: %s)", *deployment.DisplayTitle, deployment.ID)
+	logger.Debugf("DevLake deployment payload: %+v", deployment)
 
 	return nil
 }
@@ -348,8 +392,8 @@ const (
 	devLakeDateFormat = "2006-01-02T15:04:05+00:00"
 )
 
-// formatDevLakeDate formats time to DevLake required format: 2020-01-01T12:00:00+00:00
-func (d *DevLakeIntegration) formatDevLakeDate(t time.Time) string {
+// FormatDevLakeDate formats time to DevLake required format: 2020-01-01T12:00:00+00:00
+func (d *DevLakeIntegration) FormatDevLakeDate(t time.Time) string {
 	// Check for zero time to prevent invalid datetime values
 	if t.IsZero() {
 		logger.Warnf("Attempted to format zero time, returning empty string")

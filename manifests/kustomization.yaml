@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: dora-metrics
+  namespace: konflux-dora-metrics
+
+resources:
+  - namespace.yaml
+  - rbac.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - route.yaml
+
+commonLabels:
+  app.kubernetes.io/name: dora-metrics
+  app.kubernetes.io/version: "1.0.0"
+  app.kubernetes.io/component: server
+  app.kubernetes.io/part-of: dora-metrics
+
+images:
+  - name: quay.io/redhat-appstudio/dora-metrics
+    newTag: latest

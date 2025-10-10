@@ -117,6 +117,20 @@ func LoadWithFlags(flgs Flags) *Config {
 	// ArgoCD configuration - YAML only (GitOps approach)
 	argocdEnabled := yamlConfig.ArgoCD.Enabled
 
+	// Redis configuration - support environment variables
+	redisConfig := yamlConfig.Storage.Redis
+	redisHost := getEnv("REDIS_HOST", "")
+	redisPort := getEnv("REDIS_PORT", "")
+	redisPassword := getEnv("REDIS_PASSWORD", redisConfig.Password)
+	
+	// Build Redis address from environment variables or use YAML config
+	redisAddress := redisConfig.Address
+	if redisHost != "" && redisPort != "" {
+		redisAddress = redisHost + ":" + redisPort
+	} else if redisHost != "" {
+		redisAddress = redisHost + ":6379" // Default port
+	}
+
 	return &Config{
 		Port:        port,
 		Environment: environment,
@@ -134,7 +148,13 @@ func LoadWithFlags(flgs Flags) *Config {
 			KnownClusters:       argocdKnownClusters,
 		},
 		Storage: StorageConfig{
-			Redis: yamlConfig.Storage.Redis,
+			Redis: RedisYAMLConfig{
+				Enabled:    redisConfig.Enabled,
+				Address:    redisAddress,
+				Password:   redisPassword,
+				Database:   redisConfig.Database,
+				KeyPrefix:  redisConfig.KeyPrefix,
+			},
 		},
 		Integration: IntegrationConfig{
 			DevLake: DevLakeConfig{

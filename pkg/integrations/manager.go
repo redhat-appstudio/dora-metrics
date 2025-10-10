@@ -17,6 +17,7 @@ type Integration interface {
 	IsEnabled() bool
 	SendIncidentEvent(ctx context.Context, incident IncidentData, count int) error
 	CloseIncident(ctx context.Context, incidentID string) error
+	SendDeploymentEvent(ctx context.Context, deployment DevLakeCICDDeployment) error
 }
 
 var (
@@ -79,6 +80,20 @@ func (m *Manager) CloseIncidentInDevLake(ctx context.Context, incidentID string)
 	}
 
 	return integration.CloseIncident(ctx, incidentID)
+}
+
+// SendDeploymentEventToDevLake sends a deployment event to DevLake
+func (m *Manager) SendDeploymentEventToDevLake(ctx context.Context, deployment DevLakeCICDDeployment) error {
+	integration, err := m.GetIntegration("devlake")
+	if err != nil {
+		return fmt.Errorf("failed to get devlake integration: %w", err)
+	}
+
+	if !integration.IsEnabled() {
+		return fmt.Errorf("devlake integration is disabled")
+	}
+
+	return integration.SendDeploymentEvent(ctx, deployment)
 }
 
 // RegisterDevLakeIntegration registers a DevLake integration

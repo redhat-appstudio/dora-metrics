@@ -1,10 +1,10 @@
 server:
-  port: "3000"
+  port: "8080"
   environment: "staging"
   log_level: "info"
 
 webrca:
-  enabled: false
+  enabled: true
   api_url: "https://api.openshift.com/api/web-rca/v1/incidents"
   interval: "1h"
   # Offline token should be set via environment variable OFFLINE_TOKEN for security
@@ -67,6 +67,6 @@ storage:
 integration:
   devlake:
     enabled: true
-    base_url: "https://devlake-ui-devlake.apps.rosa.konflux-qe.zmr9.p3.openshiftapps.com"
-    project_id: "11"
+    base_url: "https://konflux-devlake-ui-konflux-devlake.apps.rosa.kflux-c-prd-i01.7hyu.p3.openshiftapps.com"
+    project_id: "1"
     timeout_seconds: 30

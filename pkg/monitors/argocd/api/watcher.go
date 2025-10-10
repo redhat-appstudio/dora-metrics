@@ -6,7 +6,6 @@ package api
 import (
 	"context"
 	"sync"
-	"time"
 
 	"github.com/redhat-appstudio/dora-metrics/pkg/logger"
 
@@ -14,6 +13,8 @@ import (
 	argocd "github.com/argoproj/argo-cd/v2/pkg/client/clientset/versioned"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/tools/cache"
+	toolsWatch "k8s.io/client-go/tools/watch"
 )
 
 // ArgoCDWatcher implements an ArgoCD application watcher.
@@ -130,67 +131,52 @@ func (w *ArgoCDWatcher) watchLoop(ctx context.Context) {
 	}
 }
 
-// watchNamespace watches ArgoCD applications in a specific namespace.
+// watchNamespace watches ArgoCD applications in a specific namespace using RetryWatcher.
 func (w *ArgoCDWatcher) watchNamespace(ctx context.Context, argocdClient *argocd.Clientset, namespace string) {
 	logger.Infof("Starting watch for ArgoCD applications in namespace: %s", namespace)
 
-	// Set up the watch with retry logic
-	for {
-		select {
-		case <-ctx.Done():
-			logger.Infof("Stopping watch for namespace %s due to context cancellation", namespace)
-			return
-		case <-w.stopCh:
-			logger.Infof("Stopping watch for namespace %s due to stop signal", namespace)
-			return
-		default:
-			logger.Infof("Creating watch for namespace: %s", namespace)
-
-			// First, test if we can list applications in the namespace
-			apps, err := argocdClient.ArgoprojV1alpha1().Applications(namespace).List(ctx, metav1.ListOptions{})
-			if err != nil {
-				logger.Errorf("Failed to list applications in namespace %s: %v", namespace, err)
-				time.Sleep(5 * time.Second) // Retry after 5 seconds
-				continue
-			}
-			logger.Infof("Found %d applications in namespace %s", len(apps.Items), namespace)
-
-			// Create the watch with timeout handling
-			watchInterface, err := argocdClient.ArgoprojV1alpha1().Applications(namespace).Watch(ctx, metav1.ListOptions{
-				Watch:          true,
-				TimeoutSeconds: int64Ptr(300), // 5 minutes timeout
-				// Watch all applications in the namespace
-			})
-			if err != nil {
-				logger.Errorf("Failed to create watch for namespace %s: %v", namespace, err)
-				time.Sleep(5 * time.Second) // Retry after 5 seconds
-				continue
-			}
-
-			logger.Infof("Watch created successfully for namespace: %s", namespace)
-
-			// Process watch events
-			w.processWatchEvents(ctx, watchInterface, namespace)
-
-			// If we get here, the watch ended, so we'll retry
-			logger.Warnf("Watch ended for namespace %s, retrying...", namespace)
-			time.Sleep(1 * time.Second)
+	// Define the watch function for RetryWatcher
+	watchFunc := func(options metav1.ListOptions) (watch.Interface, error) {
+		// First, test if we can list applications in the namespace
+		apps, err := argocdClient.ArgoprojV1alpha1().Applications(namespace).List(ctx, metav1.ListOptions{})
+		if err != nil {
+			logger.Errorf("Failed to list applications in namespace %s: %v", namespace, err)
+			return nil, err
 		}
+		logger.Debugf("Found %d applications in namespace %s", len(apps.Items), namespace)
+
+		// Create the watch with timeout handling
+		timeOut := int64(300) // 5 minutes timeout
+		return argocdClient.ArgoprojV1alpha1().Applications(namespace).Watch(ctx, metav1.ListOptions{
+			Watch:          true,
+			TimeoutSeconds: &timeOut,
+		})
 	}
+
+	// Create the RetryWatcher
+	watcher, err := toolsWatch.NewRetryWatcher("1", &cache.ListWatch{WatchFunc: watchFunc})
+	if err != nil {
+		logger.Errorf("Failed to create RetryWatcher for namespace %s: %v", namespace, err)
+		return
+	}
+	defer watcher.Stop()
+
+	logger.Infof("RetryWatcher created successfully for namespace: %s", namespace)
+
+	// Process watch events using RetryWatcher
+	w.processRetryWatchEvents(ctx, watcher, namespace)
 }
 
-// processWatchEvents processes events from a watch interface.
-func (w *ArgoCDWatcher) processWatchEvents(ctx context.Context, watchInterface watch.Interface, namespace string) {
-	defer watchInterface.Stop()
-
-	logger.Infof("Starting to process watch events for namespace: %s", namespace)
+// processRetryWatchEvents processes events from a RetryWatcher.
+func (w *ArgoCDWatcher) processRetryWatchEvents(ctx context.Context, watcher watch.Interface, namespace string) {
+	logger.Infof("Starting to process RetryWatch events for namespace: %s", namespace)
 	eventCount := 0
 
 	for {
 		select {
-		case event, ok := <-watchInterface.ResultChan():
+		case event, ok := <-watcher.ResultChan():
 			if !ok {
-				logger.Warnf("Watch channel closed for namespace %s (processed %d events)", namespace, eventCount)
+				logger.Warnf("RetryWatch channel closed for namespace %s (processed %d events)", namespace, eventCount)
 				return
 			}
 
@@ -231,6 +217,3 @@ func (w *ArgoCDWatcher) handleEvent(ctx context.Context, event watch.Event) erro
 	// Handle the event (filtering is done in the event processor)
 	return w.eventHandler.HandleEvent(ctx, event, app)
 }
-
-// int64Ptr returns a pointer to an int64 value
-func int64Ptr(i int64) *int64 { return &i }

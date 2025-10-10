@@ -23,13 +23,16 @@ import (
 type Formatter struct {
 	githubClient github.Client
 	storage      *storage.RedisClient
+	devlake      *integrations.DevLakeIntegration
 }
 
 // NewFormatter creates a new DevLake formatter instance.
 func NewFormatter(githubClient github.Client, storage *storage.RedisClient) *Formatter {
+	devlake := integrations.NewDevLakeIntegration("", "", false, 30)
 	return &Formatter{
 		githubClient: githubClient,
 		storage:      storage,
+		devlake:      devlake,
 	}
 }
 
@@ -66,11 +69,16 @@ func (f *Formatter) FormatDeployment(
 	// Calculate proper timeline
 	startedDate, finishedDate := f.calculateTimeline(devlakeCommits, deployedAt)
 
+	// Format dates using DevLake format
+	createdDateStr := f.devlake.FormatDevLakeDate(deployedAt)
+	startedDateStr := f.devlake.FormatDevLakeDate(startedDate)
+	finishedDateStr := f.devlake.FormatDevLakeDate(finishedDate)
+
 	return integrations.DevLakeCICDDeployment{
 		ID:                deploymentID,
-		CreatedDate:       &deployedAt,
-		StartedDate:       startedDate,
-		FinishedDate:      finishedDate,
+		CreatedDate:       &createdDateStr,
+		StartedDate:       startedDateStr,
+		FinishedDate:      finishedDateStr,
 		Environment:       "PRODUCTION",
 		Result:            result,
 		DisplayTitle:      &displayTitle,
@@ -118,11 +126,15 @@ func (f *Formatter) createDevLakeCommits(
 		}
 		logger.Infof("Using commit creation date for %s: StartedDate=%v, FinishedDate=%v", commit.SHA, startedDate, deployedAt)
 
+		// Format dates using DevLake format
+		startedDateStr := f.devlake.FormatDevLakeDate(startedDate)
+		finishedDateStr := f.devlake.FormatDevLakeDate(deployedAt)
+
 		devlakeCommits = append(devlakeCommits, integrations.DevLakeDeploymentCommit{
 			RepoURL:      commitRepoURL,
 			RefName:      commit.SHA,
-			StartedDate:  startedDate,
-			FinishedDate: deployedAt,
+			StartedDate:  startedDateStr,
+			FinishedDate: finishedDateStr,
 			CommitSHA:    commit.SHA,
 			CommitMsg:    commit.Message,
 			Result:       "SUCCESS",
@@ -152,9 +164,10 @@ func (f *Formatter) calculateTimeline(devlakeCommits []integrations.DevLakeDeplo
 	hasStartedDate := false
 
 	for _, commit := range devlakeCommits {
-		if !commit.StartedDate.IsZero() {
-			if !hasStartedDate || commit.StartedDate.Before(earliestStarted) {
-				earliestStarted = commit.StartedDate
+		// Parse the StartedDate string back to time.Time for comparison
+		if startedDate, err := time.Parse("2006-01-02T15:04:05+00:00", commit.StartedDate); err == nil && !startedDate.IsZero() {
+			if !hasStartedDate || startedDate.Before(earliestStarted) {
+				earliestStarted = startedDate
 				hasStartedDate = true
 			}
 		}
