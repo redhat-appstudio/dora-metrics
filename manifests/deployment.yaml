@@ -49,19 +49,19 @@ spec:
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: dora-metrics-secrets
+              name: konflux-dora-metrics
               key: redis-password
               optional: true
         - name: OFFLINE_TOKEN
           valueFrom:
             secretKeyRef:
-              name: dora-metrics-secrets
+              name: konflux-dora-metrics
               key: offline-token
               optional: true
         - name: DEVLAKE_WEBHOOK_TOKEN
           valueFrom:
             secretKeyRef:
-              name: dora-metrics-secrets
+              name: konflux-dora-metrics
               key: devlake-webhook-token
               optional: true
 
@@ -103,7 +103,7 @@ spec:
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: dora-metrics-secrets
+              name: konflux-dora-metrics
               key: redis-password
               optional: true
         command:
