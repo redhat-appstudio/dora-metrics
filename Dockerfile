@@ -19,9 +19,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -buildvcs=false -o m
 # Final stage
 FROM registry.redhat.io/ubi9/ubi-minimal:9.5
 
-# Install ca-certificates for HTTPS requests and bind-tools for nslookup and netcat
-RUN apk --no-cache add ca-certificates bind-tools netcat-openbsd
-
 # Create non-root user
 RUN groupadd -g 1001 dora-metrics && \
     useradd -u 1001 -g dora-metrics -s /bin/bash -m dora-metrics
