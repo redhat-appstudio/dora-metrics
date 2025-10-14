@@ -1,8 +1,8 @@
 module github.com/redhat-appstudio/dora-metrics
 
-go 1.21.0
+go 1.23
 
-toolchain go1.23.6
+toolchain go1.24.6
 
 require (
 	github.com/argoproj/argo-cd/v2 v2.12.0
@@ -150,7 +150,7 @@ require (
 	k8s.io/kubernetes v1.29.6 // indirect
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4 // indirect
 	oras.land/oras-go/v2 v2.3.0 // indirect
-	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
+	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kustomize/api v0.13.5-0.20230601165947-6ce0bf390ce3 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.14.3-0.20230601165947-6ce0bf390ce3 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
