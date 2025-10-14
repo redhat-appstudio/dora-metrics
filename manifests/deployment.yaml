@@ -24,14 +24,13 @@ spec:
         app.kubernetes.io/part-of: dora-metrics
     spec:
       serviceAccountName: dora-metrics
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1001
-        fsGroup: 1001
+      securityContext: {}
       containers:
       - name: dora-metrics
-        image: quay.io/redhat-appstudio/dora-metrics:latest
+        image: quay.io/konflux-ci/dora-metrics:latest
         imagePullPolicy: Always
+        command: ["sh", "-c"]
+        args: ["echo 'Starting DORA metrics...' && echo 'Waiting for Redis to be ready...' && sleep 20 && echo 'Starting application...' && ./main"]
         ports:
         - containerPort: 8080
           name: http
@@ -44,25 +43,25 @@ spec:
         - name: LOG_LEVEL
           value: "info"
         - name: REDIS_HOST
-          value: "redis-service"
+          value: "localhost"
         - name: REDIS_PORT
           value: "6379"
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: dora-metrics-secrets
+              name: konflux-dora-metrics
               key: redis-password
               optional: true
         - name: OFFLINE_TOKEN
           valueFrom:
             secretKeyRef:
-              name: dora-metrics-secrets
+              name: konflux-dora-metrics
               key: offline-token
               optional: true
         - name: DEVLAKE_WEBHOOK_TOKEN
           valueFrom:
             secretKeyRef:
-              name: dora-metrics-secrets
+              name: konflux-dora-metrics
               key: devlake-webhook-token
               optional: true
 
@@ -75,7 +74,7 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /health
+            path: /api/v1/health
             port: 8080
           initialDelaySeconds: 30
           periodSeconds: 10
@@ -83,7 +82,7 @@ spec:
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /health
+            path: /api/v1/health
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
@@ -104,7 +103,7 @@ spec:
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: dora-metrics-secrets
+              name: konflux-dora-metrics
               key: redis-password
               optional: true
         command:
@@ -164,24 +163,3 @@ spec:
         emptyDir: {}
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis-service
-  namespace: konflux-dora-metrics
-  labels:
-    app: redis
-    app.kubernetes.io/name: redis
-    app.kubernetes.io/version: "7.0"
-    app.kubernetes.io/component: database
-    app.kubernetes.io/part-of: dora-metrics
-spec:
-  type: ClusterIP
-  ports:
-  - port: 6379
-    targetPort: 6379
-    protocol: TCP
-    name: redis
-  selector:
-    app: dora-metrics
