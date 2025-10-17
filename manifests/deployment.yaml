@@ -64,6 +64,12 @@ spec:
               name: konflux-dora-metrics
               key: devlake-webhook-token
               optional: true
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: konflux-dora-metrics
+              key: github-token
+              optional: true
 
         resources:
           requests:
