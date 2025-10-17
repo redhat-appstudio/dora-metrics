@@ -17,7 +17,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -buildvcs=false -o main ./cmd/server
 
 # Final stage
-FROM registry.redhat.io/ubi9/ubi-minimal:9.5
+FROM registry.redhat.io/ubi9/ubi-minimal:latest
 
 # Create non-root user
 RUN groupadd -g 1001 dora-metrics && \
@@ -29,8 +29,11 @@ WORKDIR /app
 # Copy the binary from builder stage
 COPY --from=builder /workspace/main .
 
+# Copy license file
+COPY LICENSE ./
+
 # Change ownership to non-root user
-RUN chown dora-metrics:dora-metrics main
+RUN chown dora-metrics:dora-metrics main LICENSE
 
 # Switch to non-root user
 USER dora-metrics
