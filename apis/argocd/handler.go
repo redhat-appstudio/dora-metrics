@@ -31,10 +31,13 @@ type Handler struct {
 
 	// componentsToMonitor are components to monitor
 	componentsToMonitor []string
+
+	// knownClusters are the known cluster names for proper extraction
+	knownClusters []string
 }
 
 // NewHandler creates a new ArgoCD API handler.
-func NewHandler(argocdClient *argocdclient.Clientset, namespaces, componentsToMonitor []string) (*Handler, error) {
+func NewHandler(argocdClient *argocdclient.Clientset, namespaces, componentsToMonitor, knownClusters []string) (*Handler, error) {
 	if argocdClient == nil {
 		return nil, errors.New("ArgoCD client is nil")
 	}
@@ -50,7 +53,44 @@ func NewHandler(argocdClient *argocdclient.Clientset, namespaces, componentsToMo
 		k8sClient:           k8sClient,
 		namespaces:          namespaces,
 		componentsToMonitor: componentsToMonitor,
+		knownClusters:       knownClusters,
 	}, nil
+}
+
+// extractClusterName extracts the cluster name from an application name by matching against known clusters.
+func (h *Handler) extractClusterName(appName string) string {
+	// Try to find a known cluster name in the application name
+	for _, cluster := range h.knownClusters {
+		if strings.Contains(appName, cluster) {
+			return cluster
+		}
+	}
+
+	// Fallback to the old logic if no known cluster is found
+	parts := strings.Split(appName, "-")
+	if len(parts) >= 2 {
+		return parts[len(parts)-1]
+	}
+
+	return "unknown"
+}
+
+// extractComponentName extracts the component name from an application name.
+func (h *Handler) extractComponentName(appName string) string {
+	// Try to find a known component in the application name
+	for _, component := range h.componentsToMonitor {
+		if strings.Contains(appName, component) {
+			return component
+		}
+	}
+
+	// Fallback to the old logic if no known component is found
+	parts := strings.Split(appName, "-")
+	if len(parts) >= 2 {
+		return parts[len(parts)-2]
+	}
+
+	return appName
 }
 
 // createK8sClient creates a Kubernetes client using auto-detection.
@@ -167,23 +207,9 @@ func (h *Handler) generatePrometheusMetrics(applications []argocd.Application) s
 		environment := h.determineEnvironment(sourcePath)
 
 		// Parse application name to extract cluster and component
-		// For API purposes, we'll use a simple parsing approach
-		parts := strings.Split(app.Name, "-")
-		var clusterName, componentName string
-		if len(parts) >= 2 {
-			componentName = parts[len(parts)-2]
-			clusterName = parts[len(parts)-1]
-		} else {
-			componentName = app.Name
-			clusterName = "unknown"
-		}
-
-		if clusterName == "" {
-			clusterName = "unknown"
-		}
-		if componentName == "" {
-			componentName = "unknown"
-		}
+		// Extract cluster and component names using the new logic
+		clusterName := h.extractClusterName(app.Name)
+		componentName := h.extractComponentName(app.Name)
 
 		// Count for cluster/environment metrics
 		if clusterEnvCount[clusterName] == nil {
