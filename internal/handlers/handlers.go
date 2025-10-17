@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/redhat-appstudio/dora-metrics/apis/argocd"
 	"github.com/redhat-appstudio/dora-metrics/apis/health"
+	"github.com/redhat-appstudio/dora-metrics/apis/prometheus"
 	"github.com/redhat-appstudio/dora-metrics/internal/version"
 
 	argocdclient "github.com/argoproj/argo-cd/v2/pkg/client/clientset/versioned"
@@ -12,19 +13,29 @@ import (
 // SetupRoutes configures all HTTP routes for the DORA Metrics Server.
 // It registers API endpoints for health checks and other services using the API machinery pattern.
 // This function should be called during server initialization.
-func SetupRoutes(app *fiber.App, argocdClient *argocdclient.Clientset, argocdNamespaces, argocdComponentsToMonitor []string) {
+func SetupRoutes(app *fiber.App, argocdClient *argocdclient.Clientset, argocdNamespaces, argocdComponentsToMonitor, argocdKnownClusters []string) {
 	// Register all APIs here - just add one line per API
 	health.RegisterRoutes(app)
 
 	// Register ArgoCD API if client is available
 	if argocdClient != nil {
-		argocdHandler, err := argocd.NewHandler(argocdClient, argocdNamespaces, argocdComponentsToMonitor)
+		argocdHandler, err := argocd.NewHandler(argocdClient, argocdNamespaces, argocdComponentsToMonitor, argocdKnownClusters)
 		if err != nil {
 			// Log error but continue - ArgoCD API will not be available
 			// The error is already logged in NewHandler
 		} else {
 			argocd.RegisterRoutes(app, argocdHandler)
 		}
+	}
+
+	// Register Prometheus API for Grafana compatibility
+	// This provides Prometheus-compatible endpoints that Grafana expects
+	prometheusHandler, err := prometheus.NewHandler("http://localhost:8080")
+	if err != nil {
+		// Log error but continue - Prometheus API will not be available
+		// The error is already logged in NewHandler
+	} else {
+		prometheus.RegisterRoutes(app, prometheusHandler)
 	}
 
 	// Future APIs would be added like this:
