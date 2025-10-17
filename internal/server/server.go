@@ -98,7 +98,7 @@ func New(cfg *config.Config) *Server {
 	}
 
 	// Setup routes
-	handlers.SetupRoutes(app, argocdClient, cfg.ArgoCD.Namespaces, cfg.ArgoCD.ComponentsToMonitor)
+	handlers.SetupRoutes(app, argocdClient, cfg.ArgoCD.Namespaces, cfg.ArgoCD.ComponentsToMonitor, cfg.ArgoCD.KnownClusters)
 
 	// Initialize storage client if enabled
 	var storageClient *storage.RedisClient
