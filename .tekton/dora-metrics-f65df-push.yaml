@@ -23,7 +23,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/konflux-ci/dora-metrics:{{revision}}
+    value: quay.io/konflux-ci/konflux-devprod/dora-metrics:{{revision}}
   - name: dockerfile
     value: Dockerfile
   pipelineSpec:
