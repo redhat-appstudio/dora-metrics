@@ -16,7 +16,7 @@ import (
 	"github.com/redhat-appstudio/dora-metrics/pkg/monitors/webrca"
 	"github.com/redhat-appstudio/dora-metrics/pkg/storage"
 
-	argocdclient "github.com/argoproj/argo-cd/v2/pkg/client/clientset/versioned"
+	argocdclient "github.com/argoproj/argo-cd/v3/pkg/client/clientset/versioned"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
