@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	argocd "github.com/argoproj/argo-cd/v2/pkg/client/clientset/versioned"
+	argocd "github.com/argoproj/argo-cd/v3/pkg/client/clientset/versioned"
 	"github.com/redhat-appstudio/dora-metrics/pkg/monitors/argocd/api"
 	"github.com/redhat-appstudio/dora-metrics/pkg/monitors/argocd/github"
 	"github.com/redhat-appstudio/dora-metrics/pkg/monitors/argocd/parser"

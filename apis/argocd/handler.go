@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	argocd "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
-	argocdclient "github.com/argoproj/argo-cd/v2/pkg/client/clientset/versioned"
+	argocd "github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
+	argocdclient "github.com/argoproj/argo-cd/v3/pkg/client/clientset/versioned"
 	"github.com/gofiber/fiber/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
