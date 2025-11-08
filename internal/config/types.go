@@ -86,9 +86,9 @@ type ArgoCDConfig struct {
 	// Kubernetes namespaces to watch (e.g., ["argocd", "production"])
 	Namespaces []string
 
-	// Components to monitor (e.g., ["build-service", "pulp-access-controller"])
-	// These will be combined with known_clusters to generate full application names
-	ComponentsToMonitor []string
+	// Components to ignore (all other components will be monitored)
+	// These components will be excluded from monitoring across all known clusters
+	ComponentsToIgnore []string
 
 	// Known cluster names for parsing (e.g., ["kflux-ocp-p01", "pentest-p01"])
 	KnownClusters []string
@@ -104,9 +104,9 @@ type ArgoCDYAMLConfig struct {
 	// Kubernetes namespaces to watch (e.g., ["argocd", "production"])
 	Namespaces []string `yaml:"namespaces"`
 
-	// Components to monitor (e.g., ["build-service", "pulp-access-controller"])
-	// These will be combined with known_clusters to generate full application names
-	ComponentsToMonitor []string `yaml:"components_to_monitor"`
+	// Components to ignore (all other components will be monitored)
+	// These components will be excluded from monitoring across all known clusters
+	ComponentsToIgnore []string `yaml:"components_to_ignore"`
 
 	// Known cluster names for parsing (e.g., ["kflux-ocp-p01", "pentest-p01"])
 	KnownClusters []string `yaml:"known_clusters"`

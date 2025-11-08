@@ -81,10 +81,10 @@ func New(cfg *config.Config) *Server {
 	var argocdClient *argocdclient.Clientset
 	if cfg.ArgoCD.Enabled {
 		argocdConfig := &argocdmonitor.Config{
-			Enabled:             cfg.ArgoCD.Enabled,
-			Namespaces:          cfg.ArgoCD.Namespaces,
-			ComponentsToMonitor: cfg.ArgoCD.ComponentsToMonitor,
-			KnownClusters:       cfg.ArgoCD.KnownClusters,
+			Enabled:           cfg.ArgoCD.Enabled,
+			Namespaces:        cfg.ArgoCD.Namespaces,
+			ComponentsToIgnore: cfg.ArgoCD.ComponentsToIgnore,
+			KnownClusters:     cfg.ArgoCD.KnownClusters,
 		}
 
 		argocdMonitorClient, err := argocdmonitor.CreateArgoCDClient(argocdConfig)
@@ -98,7 +98,7 @@ func New(cfg *config.Config) *Server {
 	}
 
 	// Setup routes
-	handlers.SetupRoutes(app, argocdClient, cfg.ArgoCD.Namespaces, cfg.ArgoCD.ComponentsToMonitor, cfg.ArgoCD.KnownClusters)
+	handlers.SetupRoutes(app, argocdClient, cfg.ArgoCD.Namespaces, cfg.ArgoCD.ComponentsToIgnore, cfg.ArgoCD.KnownClusters)
 
 	// Initialize storage client if enabled
 	var storageClient *storage.RedisClient
@@ -148,10 +148,10 @@ func New(cfg *config.Config) *Server {
 		argocdmonitor.SetKnownClusters(cfg.ArgoCD.KnownClusters)
 
 		argocdConfig := &argocdmonitor.Config{
-			Enabled:             cfg.ArgoCD.Enabled,
-			Namespaces:          cfg.ArgoCD.Namespaces,
-			ComponentsToMonitor: cfg.ArgoCD.ComponentsToMonitor,
-			KnownClusters:       cfg.ArgoCD.KnownClusters,
+			Enabled:           cfg.ArgoCD.Enabled,
+			Namespaces:        cfg.ArgoCD.Namespaces,
+			ComponentsToIgnore: cfg.ArgoCD.ComponentsToIgnore,
+			KnownClusters:     cfg.ArgoCD.KnownClusters,
 		}
 
 		// Create ArgoCD monitor with storage client
