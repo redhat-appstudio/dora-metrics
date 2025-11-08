@@ -13,7 +13,7 @@ require (
 	github.com/redis/go-redis/v9 v9.13.0
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/oauth2 v0.21.0
+	golang.org/x/oauth2 v0.33.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.29.6
 	k8s.io/client-go v0.29.6
