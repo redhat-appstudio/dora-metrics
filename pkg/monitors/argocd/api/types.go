@@ -22,8 +22,9 @@ type Config struct {
 	// Namespaces lists Kubernetes namespaces to watch for ArgoCD applications
 	Namespaces []string `json:"namespaces"`
 
-	// ComponentsToMonitor lists component names to monitor across all clusters
-	ComponentsToMonitor []string `json:"components_to_monitor"`
+	// ComponentsToIgnore lists component names to exclude from monitoring
+	// All other components will be monitored across all clusters
+	ComponentsToIgnore []string `json:"components_to_ignore"`
 
 	// KnownClusters lists known cluster names for parsing application names
 	KnownClusters []string `json:"known_clusters"`
