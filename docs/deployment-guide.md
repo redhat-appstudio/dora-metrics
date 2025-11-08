@@ -94,10 +94,9 @@ data:
       namespaces:
         - "argocd"
         - "openshift-gitops"
-      componentsToMonitor:
-        - "konflux-ui"
-        - "konflux-api"
-        - "konflux-backend"
+      componentsToIgnore: []
+      # List components to exclude from monitoring (all others will be monitored)
+      # Example: ["test-component", "deprecated-service"]
       knownClusters:
         - "production"
         - "staging"

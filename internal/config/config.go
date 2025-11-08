@@ -76,8 +76,8 @@ func LoadWithFlags(flgs Flags) *Config {
 	// ArgoCD namespaces from YAML only - no defaults
 	argocdNamespaces := yamlConfig.ArgoCD.Namespaces
 
-	// ArgoCD components to monitor from YAML only
-	argocdComponentsToMonitor := yamlConfig.ArgoCD.ComponentsToMonitor
+	// ArgoCD components to ignore from YAML only
+	argocdComponentsToIgnore := yamlConfig.ArgoCD.ComponentsToIgnore
 
 	// ArgoCD known clusters from YAML only - no defaults
 	argocdKnownClusters := yamlConfig.ArgoCD.KnownClusters
@@ -142,10 +142,10 @@ func LoadWithFlags(flgs Flags) *Config {
 			Interval: webrcaInterval,
 		},
 		ArgoCD: ArgoCDConfig{
-			Enabled:             argocdEnabled,
-			Namespaces:          argocdNamespaces,
-			ComponentsToMonitor: argocdComponentsToMonitor,
-			KnownClusters:       argocdKnownClusters,
+			Enabled:           argocdEnabled,
+			Namespaces:        argocdNamespaces,
+			ComponentsToIgnore: argocdComponentsToIgnore,
+			KnownClusters:     argocdKnownClusters,
 		},
 		Storage: StorageConfig{
 			Redis: RedisYAMLConfig{

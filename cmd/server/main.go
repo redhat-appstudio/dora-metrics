@@ -45,8 +45,10 @@ func main() {
 
 	if cfg.ArgoCD.Enabled {
 		logger.Infof("ArgoCD monitoring: enabled (namespaces: %v)", cfg.ArgoCD.Namespaces)
-		if len(cfg.ArgoCD.ComponentsToMonitor) > 0 {
-			logger.Infof("ArgoCD components to monitor: %v", cfg.ArgoCD.ComponentsToMonitor)
+		if len(cfg.ArgoCD.ComponentsToIgnore) > 0 {
+			logger.Infof("ArgoCD components to ignore: %v", cfg.ArgoCD.ComponentsToIgnore)
+		} else {
+			logger.Infof("ArgoCD monitoring: all components will be monitored")
 		}
 		if len(cfg.ArgoCD.KnownClusters) > 0 {
 			logger.Infof("ArgoCD known clusters: %v", cfg.ArgoCD.KnownClusters)

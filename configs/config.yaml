@@ -16,31 +16,11 @@ argocd:
   namespaces:
     - konflux-public-production
     - argocd
-  # List of components to monitor across all known clusters
-  # These will be combined with known_clusters to generate full application names
-  # Format: component-name (e.g., "build-service", "pulp-access-controller")
-  components_to_monitor:
-    - build-service
-    - crossplane-control-plane
-    - dora-metrics
-    - enterprise-contract
-    - etcd-defrag
-    - etcd-shield
-    - image-controller
-    - integration
-    - internal-services
-    - konflux-info
-    - konflux-ui
-    - kubelet-config
-    - kueue
-    - kyverno
-    - mintmaker
-    - multi-platform-controller
-    - namespace-lister
-    - notification-controller
-    - project-controller
-    - release
-    - smee-client
+  # List of components to ignore (all other components will be monitored)
+  # These components will be excluded from monitoring across all known clusters
+  # Format: component-name (e.g., "test-component", "deprecated-service")
+  # Leave empty to monitor all components
+  components_to_ignore: []
 
   # Known cluster names for application name parsing
   # These are used to extract component and cluster information from application names
