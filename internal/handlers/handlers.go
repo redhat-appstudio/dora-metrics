@@ -13,13 +13,13 @@ import (
 // SetupRoutes configures all HTTP routes for the DORA Metrics Server.
 // It registers API endpoints for health checks and other services using the API machinery pattern.
 // This function should be called during server initialization.
-func SetupRoutes(app *fiber.App, argocdClient *argocdclient.Clientset, argocdNamespaces, argocdComponentsToMonitor, argocdKnownClusters []string) {
+func SetupRoutes(app *fiber.App, argocdClient *argocdclient.Clientset, argocdNamespaces, argocdComponentsToIgnore, argocdKnownClusters []string) {
 	// Register all APIs here - just add one line per API
 	health.RegisterRoutes(app)
 
 	// Register ArgoCD API if client is available
 	if argocdClient != nil {
-		argocdHandler, err := argocd.NewHandler(argocdClient, argocdNamespaces, argocdComponentsToMonitor, argocdKnownClusters)
+		argocdHandler, err := argocd.NewHandler(argocdClient, argocdNamespaces, argocdComponentsToIgnore, argocdKnownClusters)
 		if err != nil {
 			// Log error but continue - ArgoCD API will not be available
 			// The error is already logged in NewHandler
