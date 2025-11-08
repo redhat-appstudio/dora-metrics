@@ -66,8 +66,8 @@ func (p *ApplicationParser) ShouldMonitor(app *v1alpha1.Application) bool {
 	// Parse application name to get component and cluster
 	_, component, cluster := p.parseApplicationName(app.Name)
 
-	// Check if component should be monitored
-	if !p.isComponentMonitored(component) {
+	// Check if component should be ignored
+	if p.isComponentIgnored(component) {
 		return false
 	}
 
@@ -124,10 +124,17 @@ func (p *ApplicationParser) isNamespaceMonitored(namespace string) bool {
 	return false
 }
 
-// isComponentMonitored checks if a component should be monitored.
-func (p *ApplicationParser) isComponentMonitored(component string) bool {
-	for _, comp := range p.config.ComponentsToMonitor {
-		if comp == component {
+// isComponentIgnored checks if a component should be ignored (not monitored).
+// Returns true if the component is in the ignore list, false otherwise.
+// By default, all components are monitored unless they are in the ignore list.
+func (p *ApplicationParser) isComponentIgnored(component string) bool {
+	// If component is empty, don't ignore it (let other checks handle it)
+	if component == "" {
+		return false
+	}
+	// Check if component is in the ignore list
+	for _, ignoredComp := range p.config.ComponentsToIgnore {
+		if ignoredComp == component {
 			return true
 		}
 	}

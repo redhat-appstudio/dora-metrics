@@ -26,28 +26,9 @@ data:
       namespaces:
         - konflux-public-production
         - argocd
-      components_to_monitor:
-        - build-service
-        - crossplane-control-plane
-        - dora-metrics
-        - enterprise-contract
-        - etcd-defrag
-        - etcd-shield
-        - image-controller
-        - integration
-        - internal-services
-        - konflux-info
-        - konflux-ui
-        - kubelet-config
-        - kueue
-        - kyverno
-        - mintmaker
-        - multi-platform-controller
-        - namespace-lister
-        - notification-controller
-        - project-controller
-        - release
-        - smee-client
+      # List of components to ignore (all other components will be monitored)
+      # Leave empty to monitor all components
+      components_to_ignore: []
       known_clusters:
         - kflux-ocp-p01
         - kflux-osp-p01
