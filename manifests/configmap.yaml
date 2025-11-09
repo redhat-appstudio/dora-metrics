@@ -50,8 +50,50 @@ data:
         key_prefix: "dora-metrics"
 
     integration:
+      # DevLake Integration Configuration
+      # DevLake is a data engineering platform that collects, transforms, and visualizes software development data.
+      # This integration sends deployment events from ArgoCD applications to DevLake projects for DORA metrics tracking.
+      #
+      # How it works:
+      # 1. When an ArgoCD application is deployed, the system extracts component name, revision, and commit history
+      # 2. A deployment event is formatted according to DevLake's CICD deployment API format
+      # 3. The deployment is sent to the global project (always) and any matching team projects
+      # 4. DevLake processes these events to calculate DORA metrics (deployment frequency, lead time, etc.)
+      #
+      # Authentication: Requires DEVLAKE_WEBHOOK_TOKEN environment variable to be set
       devlake:
-        enabled: true
-        base_url: "https://konflux-devlake-ui-konflux-devlake.apps.rosa.kflux-c-prd-i01.7hyu.p3.openshiftapps.com"
-        project_id: "1"
-        timeout_seconds: 30
+        enabled: true  # Set to false to disable DevLake integration
+        base_url: "https://konflux-devlake-ui-konflux-devlake.apps.rosa.kflux-c-prd-i01.7hyu.p3.openshiftapps.com"  # DevLake instance URL
+        project_id: "1"  # Global DevLake project ID - receives ALL deployment events from all components
+        timeout_seconds: 30  # HTTP request timeout for DevLake API calls
+
+        # Team Project Configuration
+        # Teams allow routing deployments to team-specific DevLake projects in addition to the global project.
+        # This enables teams to have their own DORA metrics dashboards while maintaining a global view.
+        #
+        # Deployment Routing Logic:
+        # - Every deployment is ALWAYS sent to the global project (project_id above)
+        # - If a component belongs to a team, the deployment is ALSO sent to that team's project
+        # - A component can belong to multiple teams (deployment sent to all matching team projects)
+        # - If a component doesn't match any team, it only goes to the global project
+        #
+        # Example: If "build-service" component is deployed:
+        # - Sent to global project (project_id: "1")
+        # - Sent to team-platform project (project_id: "2") if build-service is in team-platform's argocd_components
+        teams:
+          # Example team configuration (uncomment and configure as needed):
+          # - name: "team-platform"  # Human-readable team name for logging
+          #   project_id: "2"  # DevLake project ID for this team's metrics dashboard
+          #   argocd_components:  # List of ArgoCD component names that belong to this team
+          #     - "build-service"  # Component name as extracted from ArgoCD application name
+          #     - "crossplane-control-plane"
+          # - name: "team-ui"
+          #   project_id: "3"
+          #   argocd_components:
+          #     - "konflux-ui"
+          #     - "konflux-info"
+           - name: "team-ui"
+             project_id: "3"
+             argocd_components:
+               - "konflux-ui"
+               - "konflux-info"

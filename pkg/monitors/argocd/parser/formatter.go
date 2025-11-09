@@ -28,7 +28,9 @@ type Formatter struct {
 
 // NewFormatter creates a new DevLake formatter instance.
 func NewFormatter(githubClient github.Client, storage *storage.RedisClient) *Formatter {
-	devlake := integrations.NewDevLakeIntegration("", "", false, 30)
+	// Create a minimal DevLake integration instance for formatting only
+	// This is not used for sending, only for date formatting
+	devlake := integrations.NewDevLakeIntegration("", "", false, 30, nil)
 	return &Formatter{
 		githubClient: githubClient,
 		storage:      storage,
@@ -62,8 +64,18 @@ func (f *Formatter) FormatDeployment(
 		componentName = app.Name
 	}
 
-	displayTitle := fmt.Sprintf("Production Deployment component: %s, revision %s (%s)",
-		componentName, deploymentID, deployedAt.Format("2006-01-02 15:04:05 MST"))
+	// Create a meaningful DisplayTitle for AI agents with structured information
+	// Format: "ArgoCD Deployment | Component: {component} | Namespace: {namespace} | Revision: {revision} | Status: {result} | Deployed: {timestamp}"
+	namespace := appInfo.Namespace
+	if namespace == "" {
+		namespace = app.Namespace
+	}
+	displayTitle := fmt.Sprintf("ArgoCD Deployment | Component: %s | Namespace: %s | Revision: %s | Status: %s | Deployed: %s",
+		componentName,
+		namespace,
+		deploymentID,
+		result,
+		deployedAt.Format("2006-01-02 15:04:05 MST"))
 	name := fmt.Sprintf("deploy to production %s", deploymentID)
 
 	// Calculate proper timeline

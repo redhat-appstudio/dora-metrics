@@ -143,11 +143,6 @@ func (ep *EventProcessor) processFailedDeployment(ctx context.Context, app *v1al
 	// Get commit history for the failed deployment (same as successful deployment)
 	commitHistory := ep.commitProcessor.GetCommitHistoryForDeployment(app, appInfo)
 
-	// Create a failed DevLake payload using the formatter to get real commit data
-	displayTitle := fmt.Sprintf("Failed Deployment app: %s, component: %s, revision %s (%s)",
-		app.Name, appInfo.Component, appInfo.Revision, appInfo.DeployedAt.Format("2006-01-02 15:04:05 MST"))
-	name := fmt.Sprintf("deploy to production %s", appInfo.Revision)
-
 	// Use the formatter to create a proper DevLake deployment with real commit data
 	deployment, hasCommits := ep.formatter.FormatDeployment(app, appInfo, appInfo.DeployedAt, commitHistory)
 
@@ -157,7 +152,24 @@ func (ep *EventProcessor) processFailedDeployment(ctx context.Context, app *v1al
 		return nil
 	}
 
-	// Override the result to FAILED and update display info
+	// Override the result to FAILED and update display info with meaningful format
+	// The formatter already creates a good DisplayTitle, we just need to update it to show FAILED status
+	componentName := appInfo.Component
+	if componentName == "" {
+		componentName = app.Name
+	}
+	namespace := appInfo.Namespace
+	if namespace == "" {
+		namespace = app.Namespace
+	}
+	
+	displayTitle := fmt.Sprintf("ArgoCD Deployment | Component: %s | Namespace: %s | Revision: %s | Status: FAILED | Deployed: %s",
+		componentName,
+		namespace,
+		appInfo.Revision,
+		appInfo.DeployedAt.Format("2006-01-02 15:04:05 MST"))
+	name := fmt.Sprintf("deploy to production %s", appInfo.Revision)
+
 	deployment.Result = "FAILED"
 	deployment.DisplayTitle = &displayTitle
 	deployment.Name = &name

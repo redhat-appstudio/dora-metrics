@@ -50,7 +50,28 @@ func New(cfg *config.Config) *Server {
 
 	// Initialize devlake integration
 	integrationManager := integrations.GetManager()
-	integrationManager.RegisterDevLakeIntegration(cfg.Integration.DevLake.BaseURL, cfg.Integration.DevLake.ProjectID, cfg.Integration.DevLake.Enabled)
+	integrationManager.RegisterDevLakeIntegration(
+		cfg.Integration.DevLake.BaseURL,
+		cfg.Integration.DevLake.ProjectID,
+		cfg.Integration.DevLake.Enabled,
+		cfg.Integration.DevLake.TimeoutSeconds,
+		cfg.Integration.DevLake.Teams,
+	)
+	
+	// Log DevLake integration configuration
+	if cfg.Integration.DevLake.Enabled {
+		logger.Infof("DevLake integration: enabled (base URL: %s, global project ID: %s)", cfg.Integration.DevLake.BaseURL, cfg.Integration.DevLake.ProjectID)
+		if len(cfg.Integration.DevLake.Teams) > 0 {
+			logger.Infof("DevLake teams configured: %d team(s)", len(cfg.Integration.DevLake.Teams))
+			for _, team := range cfg.Integration.DevLake.Teams {
+				logger.Infof("  Team: %s (project ID: %s) - Components: %v", team.Name, team.ProjectID, team.ArgocdComponents)
+			}
+		} else {
+			logger.Infof("DevLake integration: no teams configured - deployments will only be sent to global project")
+		}
+	} else {
+		logger.Infof("DevLake integration: disabled")
+	}
 
 	// Create Fiber app with faster JSON encoder
 	app := fiber.New(fiber.Config{

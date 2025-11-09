@@ -162,6 +162,7 @@ func LoadWithFlags(flgs Flags) *Config {
 				BaseURL:        yamlConfig.Integration.DevLake.BaseURL,
 				ProjectID:      yamlConfig.Integration.DevLake.ProjectID,
 				TimeoutSeconds: yamlConfig.Integration.DevLake.TimeoutSeconds,
+				Teams:          convertTeamYAMLToConfig(yamlConfig.Integration.DevLake.Teams),
 			},
 		},
 	}
@@ -185,4 +186,20 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+// convertTeamYAMLToConfig converts TeamYAMLConfig slice to TeamConfig slice
+func convertTeamYAMLToConfig(yamlTeams []TeamYAMLConfig) []TeamConfig {
+	if yamlTeams == nil {
+		return nil
+	}
+	teams := make([]TeamConfig, len(yamlTeams))
+	for i, yamlTeam := range yamlTeams {
+		teams[i] = TeamConfig{
+			Name:            yamlTeam.Name,
+			ProjectID:       yamlTeam.ProjectID,
+			ArgocdComponents: yamlTeam.ArgocdComponents,
+		}
+	}
+	return teams
 }

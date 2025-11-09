@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/redhat-appstudio/dora-metrics/internal/config"
 	"github.com/redhat-appstudio/dora-metrics/pkg/logger"
 )
 
@@ -127,7 +128,7 @@ type DevLakeIntegration struct {
 	// DevLake base URL
 	baseURL string
 
-	// DevLake project ID for webhook connections
+	// DevLake project ID for webhook connections (global project)
 	projectID string
 
 	// HTTP client for making requests
@@ -135,10 +136,13 @@ type DevLakeIntegration struct {
 
 	// API timeout in seconds
 	timeoutSeconds int
+
+	// Team configurations for component-to-team mappings
+	teams []config.TeamConfig
 }
 
 // NewDevLakeIntegration creates a new DevLake integration instance
-func NewDevLakeIntegration(baseURL string, projectID string, enabled bool, timeoutSeconds int) *DevLakeIntegration {
+func NewDevLakeIntegration(baseURL string, projectID string, enabled bool, timeoutSeconds int, teams []config.TeamConfig) *DevLakeIntegration {
 	if timeoutSeconds <= 0 {
 		timeoutSeconds = 30 // Default timeout
 	}
@@ -150,7 +154,26 @@ func NewDevLakeIntegration(baseURL string, projectID string, enabled bool, timeo
 		projectID:      projectID,
 		httpClient:     &http.Client{Timeout: time.Duration(timeoutSeconds) * time.Second},
 		timeoutSeconds: timeoutSeconds,
+		teams:          teams,
 	}
+}
+
+// GetTeamsForComponent returns all teams that contain the specified component
+func (d *DevLakeIntegration) GetTeamsForComponent(component string) []config.TeamConfig {
+	if component == "" || len(d.teams) == 0 {
+		return nil
+	}
+
+	var matchingTeams []config.TeamConfig
+	for _, team := range d.teams {
+		for _, teamComponent := range team.ArgocdComponents {
+			if teamComponent == component {
+				matchingTeams = append(matchingTeams, team)
+				break // Component found in this team, move to next team
+			}
+		}
+	}
+	return matchingTeams
 }
 
 // IsEnabled returns whether the integration is enabled
@@ -321,12 +344,45 @@ func (d *DevLakeIntegration) CloseIncident(ctx context.Context, incidentID strin
 	return nil
 }
 
-// SendDeploymentEvent sends an ArgoCD deployment event to DevLake
-func (d *DevLakeIntegration) SendDeploymentEvent(ctx context.Context, deployment DevLakeCICDDeployment) error {
-	if !d.enabled {
-		return fmt.Errorf("devlake integration is disabled")
+// extractComponentFromDisplayTitle extracts component name from DisplayTitle
+// Supports both old and new formats:
+// Old: "Production Deployment component: {component}, revision {revision} ({date})"
+// New: "ArgoCD Deployment | Component: {component} | Cluster: {cluster} | Environment: {env} | Revision: {revision} | Commits: {count} | Status: {result} | Deployed: {timestamp}"
+func (d *DevLakeIntegration) extractComponentFromDisplayTitle(displayTitle *string) string {
+	if displayTitle == nil || *displayTitle == "" {
+		return ""
 	}
 
+	// Try new format first: "Component: {component} |"
+	prefix := "Component: "
+	idx := strings.Index(*displayTitle, prefix)
+	if idx != -1 {
+		// Extract component name (everything after "Component: " until the next " |")
+		start := idx + len(prefix)
+		end := strings.Index((*displayTitle)[start:], " |")
+		if end != -1 {
+			return strings.TrimSpace((*displayTitle)[start : start+end])
+		}
+		// If no " |" found, try until end of string
+		return strings.TrimSpace((*displayTitle)[start:])
+	}
+
+	// Fallback to old format: "component: {component},"
+	prefix = "component: "
+	idx = strings.Index(*displayTitle, prefix)
+	if idx != -1 {
+		start := idx + len(prefix)
+		end := strings.Index((*displayTitle)[start:], ",")
+		if end != -1 {
+			return strings.TrimSpace((*displayTitle)[start : start+end])
+		}
+	}
+
+	return ""
+}
+
+// sendDeploymentToProject sends a deployment to a specific DevLake project
+func (d *DevLakeIntegration) sendDeploymentToProject(ctx context.Context, deployment DevLakeCICDDeployment, projectID string, projectName string) error {
 	// Get DevLake token from environment
 	token, err := d.getDevLakeToken()
 	if err != nil {
@@ -334,7 +390,7 @@ func (d *DevLakeIntegration) SendDeploymentEvent(ctx context.Context, deployment
 	}
 
 	// Send HTTP POST to DevLake deployments endpoint
-	url := fmt.Sprintf("%s/api/rest/plugins/webhook/connections/%s/deployments", d.baseURL, d.projectID)
+	url := fmt.Sprintf("%s/api/rest/plugins/webhook/connections/%s/deployments", d.baseURL, projectID)
 
 	// Convert deployment to JSON
 	payload, err := json.Marshal(deployment)
@@ -342,7 +398,7 @@ func (d *DevLakeIntegration) SendDeploymentEvent(ctx context.Context, deployment
 		return fmt.Errorf("failed to marshal DevLake deployment: %w", err)
 	}
 
-	logger.Debugf("DevLake deployment API URL: %s", url)
+	logger.Debugf("DevLake deployment API URL: %s (project: %s)", url, projectName)
 	logger.Debugf("DevLake deployment payload: %s", string(payload))
 
 	// Create HTTP request
@@ -372,8 +428,57 @@ func (d *DevLakeIntegration) SendDeploymentEvent(ctx context.Context, deployment
 		return fmt.Errorf("DevLake deployment API returned error status %d: %s", resp.StatusCode, string(body))
 	}
 
-	logger.Infof("DevLake deployment sent successfully: %s (ID: %s)", *deployment.DisplayTitle, deployment.ID)
-	logger.Debugf("DevLake deployment payload: %+v", deployment)
+	logger.Infof("DevLake deployment sent successfully to %s: %s (ID: %s)", projectName, *deployment.DisplayTitle, deployment.ID)
+	return nil
+}
+
+// SendDeploymentEvent sends an ArgoCD deployment event to DevLake
+// It sends to the global project and all team projects where the component belongs
+func (d *DevLakeIntegration) SendDeploymentEvent(ctx context.Context, deployment DevLakeCICDDeployment) error {
+	if !d.enabled {
+		return fmt.Errorf("devlake integration is disabled")
+	}
+
+	// Extract component name from DisplayTitle
+	component := d.extractComponentFromDisplayTitle(deployment.DisplayTitle)
+
+	// Get teams for this component
+	teams := d.GetTeamsForComponent(component)
+
+	// Track errors per project
+	var errors []string
+	successCount := 0
+
+	// Always send to global project first
+	if err := d.sendDeploymentToProject(ctx, deployment, d.projectID, "global"); err != nil {
+		logger.Errorf("Failed to send deployment to global project: %v", err)
+		errors = append(errors, fmt.Sprintf("global project: %v", err))
+	} else {
+		successCount++
+	}
+
+	// Send to all team projects where component belongs
+	for _, team := range teams {
+		if err := d.sendDeploymentToProject(ctx, deployment, team.ProjectID, team.Name); err != nil {
+			logger.Errorf("Failed to send deployment to team project %s (ID: %s): %v", team.Name, team.ProjectID, err)
+			errors = append(errors, fmt.Sprintf("team %s (project %s): %v", team.Name, team.ProjectID, err))
+		} else {
+			successCount++
+			logger.Debugf("Deployment sent to team project %s (ID: %s) for component %s", team.Name, team.ProjectID, component)
+		}
+	}
+
+	// Log summary
+	totalProjects := 1 + len(teams) // global + teams
+	if len(errors) > 0 {
+		logger.Warnf("Deployment sent to %d/%d projects successfully. Errors: %v", successCount, totalProjects, errors)
+		// Return error only if all projects failed
+		if successCount == 0 {
+			return fmt.Errorf("failed to send deployment to all projects: %v", errors)
+		}
+	} else {
+		logger.Infof("Deployment sent successfully to all %d projects (global + %d team(s))", totalProjects, len(teams))
+	}
 
 	return nil
 }
