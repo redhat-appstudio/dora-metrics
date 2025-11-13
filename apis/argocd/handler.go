@@ -29,15 +29,15 @@ type Handler struct {
 	// namespaces are the namespaces to monitor
 	namespaces []string
 
-	// componentsToMonitor are components to monitor
-	componentsToMonitor []string
+	// componentsToIgnore are components to exclude from monitoring
+	componentsToIgnore []string
 
 	// knownClusters are the known cluster names for proper extraction
 	knownClusters []string
 }
 
 // NewHandler creates a new ArgoCD API handler.
-func NewHandler(argocdClient *argocdclient.Clientset, namespaces, componentsToMonitor, knownClusters []string) (*Handler, error) {
+func NewHandler(argocdClient *argocdclient.Clientset, namespaces, componentsToIgnore, knownClusters []string) (*Handler, error) {
 	if argocdClient == nil {
 		return nil, errors.New("ArgoCD client is nil")
 	}
@@ -49,11 +49,11 @@ func NewHandler(argocdClient *argocdclient.Clientset, namespaces, componentsToMo
 	}
 
 	return &Handler{
-		argocdClient:        argocdClient,
-		k8sClient:           k8sClient,
+		argocdClient:       argocdClient,
+		k8sClient:          k8sClient,
 		namespaces:          namespaces,
-		componentsToMonitor: componentsToMonitor,
-		knownClusters:       knownClusters,
+		componentsToIgnore:  componentsToIgnore,
+		knownClusters:      knownClusters,
 	}, nil
 }
 
@@ -76,15 +76,18 @@ func (h *Handler) extractClusterName(appName string) string {
 }
 
 // extractComponentName extracts the component name from an application name.
+// Since we now monitor all components by default, we extract the component
+// by removing the cluster suffix from the application name.
 func (h *Handler) extractComponentName(appName string) string {
-	// Try to find a known component in the application name
-	for _, component := range h.componentsToMonitor {
-		if strings.Contains(appName, component) {
-			return component
+	// Try to find a known cluster name in the application name and remove it
+	for _, cluster := range h.knownClusters {
+		if strings.HasSuffix(appName, "-"+cluster) {
+			// Remove the cluster suffix to get the component name
+			return strings.TrimSuffix(appName, "-"+cluster)
 		}
 	}
 
-	// Fallback to the old logic if no known component is found
+	// Fallback to the old logic if no known cluster is found
 	parts := strings.Split(appName, "-")
 	if len(parts) >= 2 {
 		return parts[len(parts)-2]
