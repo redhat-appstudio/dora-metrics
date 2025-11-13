@@ -16,7 +16,7 @@ import (
 	"github.com/redhat-appstudio/dora-metrics/pkg/monitors/webrca"
 	"github.com/redhat-appstudio/dora-metrics/pkg/storage"
 
-	argocdclient "github.com/argoproj/argo-cd/v2/pkg/client/clientset/versioned"
+	argocdclient "github.com/argoproj/argo-cd/v3/pkg/client/clientset/versioned"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -81,10 +81,10 @@ func New(cfg *config.Config) *Server {
 	var argocdClient *argocdclient.Clientset
 	if cfg.ArgoCD.Enabled {
 		argocdConfig := &argocdmonitor.Config{
-			Enabled:           cfg.ArgoCD.Enabled,
-			Namespaces:        cfg.ArgoCD.Namespaces,
+			Enabled:            cfg.ArgoCD.Enabled,
+			Namespaces:         cfg.ArgoCD.Namespaces,
 			ComponentsToIgnore: cfg.ArgoCD.ComponentsToIgnore,
-			KnownClusters:     cfg.ArgoCD.KnownClusters,
+			KnownClusters:      cfg.ArgoCD.KnownClusters,
 		}
 
 		argocdMonitorClient, err := argocdmonitor.CreateArgoCDClient(argocdConfig)
@@ -148,10 +148,10 @@ func New(cfg *config.Config) *Server {
 		argocdmonitor.SetKnownClusters(cfg.ArgoCD.KnownClusters)
 
 		argocdConfig := &argocdmonitor.Config{
-			Enabled:           cfg.ArgoCD.Enabled,
-			Namespaces:        cfg.ArgoCD.Namespaces,
+			Enabled:            cfg.ArgoCD.Enabled,
+			Namespaces:         cfg.ArgoCD.Namespaces,
 			ComponentsToIgnore: cfg.ArgoCD.ComponentsToIgnore,
-			KnownClusters:     cfg.ArgoCD.KnownClusters,
+			KnownClusters:      cfg.ArgoCD.KnownClusters,
 		}
 
 		// Create ArgoCD monitor with storage client
