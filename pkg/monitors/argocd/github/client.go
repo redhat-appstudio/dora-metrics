@@ -58,6 +58,11 @@ func (c *client) IsValidCommit(commitSHA string) (bool, error) {
 
 // FindRepositoryForCommit searches for the repository containing the given commit.
 func (c *client) FindRepositoryForCommit(commitSHA string) (string, error) {
+	// Validate commit SHA is not empty
+	if commitSHA == "" {
+		return "", fmt.Errorf("commit SHA cannot be empty")
+	}
+
 	ctx := context.Background()
 
 	query := fmt.Sprintf("hash:%s", commitSHA)
@@ -92,6 +97,14 @@ func (c *client) FindRepositoryForCommit(commitSHA string) (string, error) {
 
 // GetCommitHistoryBetween retrieves commit history between two commits.
 func (c *client) GetCommitHistoryBetween(oldSHA, newSHA, repoURL string) ([]storage.CommitInfo, error) {
+	// Validate commit SHAs are not empty
+	if oldSHA == "" {
+		return nil, fmt.Errorf("old commit SHA cannot be empty")
+	}
+	if newSHA == "" {
+		return nil, fmt.Errorf("new commit SHA cannot be empty")
+	}
+
 	ctx := context.Background()
 
 	owner, repo := parseRepoURL(repoURL)
@@ -129,6 +142,12 @@ func (c *client) GetCommitHistoryBetween(oldSHA, newSHA, repoURL string) ([]stor
 
 // GetCommitMessage retrieves the commit message for a given commit.
 func (c *client) GetCommitMessage(commitSHA, repoURL string) string {
+	// Validate commit SHA is not empty
+	if commitSHA == "" {
+		logger.Warnf("GetCommitMessage called with empty commit SHA")
+		return ""
+	}
+
 	ctx := context.Background()
 
 	owner, repo := parseRepoURL(repoURL)
@@ -147,6 +166,12 @@ func (c *client) GetCommitMessage(commitSHA, repoURL string) string {
 
 // GetCommitDate retrieves the commit creation date for a given commit.
 func (c *client) GetCommitDate(commitSHA, repoURL string) time.Time {
+	// Validate commit SHA is not empty
+	if commitSHA == "" {
+		logger.Warnf("GetCommitDate called with empty commit SHA")
+		return time.Time{}
+	}
+
 	ctx := context.Background()
 
 	owner, repo := parseRepoURL(repoURL)

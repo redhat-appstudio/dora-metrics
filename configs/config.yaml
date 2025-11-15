@@ -1,7 +1,7 @@
 server:
   port: "8080"
   environment: "staging"
-  log_level: "info"
+  log_level: "debug"
 
 webrca:
   enabled: true

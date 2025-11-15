@@ -80,9 +80,19 @@ func (cp *CommitProcessor) createCommitsFromImages(app *v1alpha1.Application, va
 		logger.Infof("Found revision %s repository via GitHub search: %s", app.Status.Sync.Revision, revisionRepoURL)
 	}
 
+	// Validate revision is not empty
+	if app.Status.Sync.Revision == "" {
+		logger.Errorf("CRITICAL: Application %s has empty revision - cannot process", app.Name)
+		return []storage.CommitInfo{}
+	}
+
 	commitMsg := cp.githubClient.GetCommitMessage(app.Status.Sync.Revision, revisionRepoURL)
 	if commitMsg == "" {
-		commitMsg = fmt.Sprintf("Commit %s", app.Status.Sync.Revision[:8])
+		if len(app.Status.Sync.Revision) >= 8 {
+			commitMsg = fmt.Sprintf("Commit %s", app.Status.Sync.Revision[:8])
+		} else {
+			commitMsg = fmt.Sprintf("Commit %s", app.Status.Sync.Revision)
+		}
 	}
 
 	// Normalize the repository URL
@@ -109,6 +119,7 @@ func (cp *CommitProcessor) createCommitsFromImages(app *v1alpha1.Application, va
 	for _, image := range validImages {
 		tag := cp.imageProcessor.extractTagFromImage(image)
 		if tag == "" {
+			logger.Warnf("Skipping image %s - no tag extracted", image)
 			continue // Skip if no tag
 		}
 
@@ -143,7 +154,11 @@ func (cp *CommitProcessor) createCommitsFromImages(app *v1alpha1.Application, va
 		// Get commit message
 		imageCommitMsg := cp.githubClient.GetCommitMessage(tag, imageRepoURL)
 		if imageCommitMsg == "" {
-			imageCommitMsg = fmt.Sprintf("Commit %s", tag[:8])
+			if len(tag) >= 8 {
+				imageCommitMsg = fmt.Sprintf("Commit %s", tag[:8])
+			} else {
+				imageCommitMsg = fmt.Sprintf("Commit %s", tag)
+			}
 		}
 
 		// Get commit creation date - this is REQUIRED for DevLake compliance
@@ -175,6 +190,12 @@ func (cp *CommitProcessor) getCommitHistoryForChangedImages(
 	appInfo *api.ApplicationInfo,
 	validImages []string,
 ) ([]storage.CommitInfo, error) {
+	// Validate revision is not empty - check early before processing
+	if app.Status.Sync.Revision == "" {
+		logger.Errorf("CRITICAL: Application %s has empty revision - cannot process", app.Name)
+		return []storage.CommitInfo{}, fmt.Errorf("application %s has empty revision", app.Name)
+	}
+
 	var allCommits []storage.CommitInfo
 	seen := make(map[string]bool) // Track by SHA only to prevent duplicates
 
@@ -197,7 +218,11 @@ func (cp *CommitProcessor) getCommitHistoryForChangedImages(
 
 	commitMsg := cp.githubClient.GetCommitMessage(app.Status.Sync.Revision, revisionRepoURL)
 	if commitMsg == "" {
-		commitMsg = fmt.Sprintf("Commit %s", app.Status.Sync.Revision[:8])
+		if len(app.Status.Sync.Revision) >= 8 {
+			commitMsg = fmt.Sprintf("Commit %s", app.Status.Sync.Revision[:8])
+		} else {
+			commitMsg = fmt.Sprintf("Commit %s", app.Status.Sync.Revision)
+		}
 	}
 
 	// Normalize the repository URL
@@ -232,6 +257,7 @@ func (cp *CommitProcessor) getCommitHistoryForChangedImages(
 		for _, image := range validImages {
 			tag := cp.imageProcessor.extractTagFromImage(image)
 			if tag == "" {
+				logger.Warnf("Skipping image %s - no tag extracted", image)
 				continue // Skip if no tag
 			}
 
@@ -265,7 +291,11 @@ func (cp *CommitProcessor) getCommitHistoryForChangedImages(
 
 			imageCommitMsg := cp.githubClient.GetCommitMessage(tag, imageRepoURL)
 			if imageCommitMsg == "" {
-				imageCommitMsg = fmt.Sprintf("Commit %s", tag[:8])
+				if len(tag) >= 8 {
+					imageCommitMsg = fmt.Sprintf("Commit %s", tag[:8])
+				} else {
+					imageCommitMsg = fmt.Sprintf("Commit %s", tag)
+				}
 			}
 
 			// Get commit creation date - this is REQUIRED for DevLake compliance

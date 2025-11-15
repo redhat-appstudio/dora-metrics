@@ -201,20 +201,34 @@ func (f *Formatter) getRepoURLFromHistory(app *v1alpha1.Application, commitSHA s
 
 // getCommitMessageFromGitHub retrieves commit message from GitHub.
 func (f *Formatter) getCommitMessageFromGitHub(commitSHA string) string {
+	// Validate commit SHA is not empty
+	if commitSHA == "" {
+		return "Commit (unknown)"
+	}
+
 	if f.githubClient == nil {
-		return fmt.Sprintf("Commit %s", commitSHA[:8])
+		if len(commitSHA) >= 8 {
+			return fmt.Sprintf("Commit %s", commitSHA[:8])
+		}
+		return fmt.Sprintf("Commit %s", commitSHA)
 	}
 
 	// Try to find the repository for this commit
 	repoURL, err := f.githubClient.FindRepositoryForCommit(commitSHA)
 	if err != nil {
-		return fmt.Sprintf("Commit %s", commitSHA[:8])
+		if len(commitSHA) >= 8 {
+			return fmt.Sprintf("Commit %s", commitSHA[:8])
+		}
+		return fmt.Sprintf("Commit %s", commitSHA)
 	}
 
 	// Get the commit message
 	commitMsg := f.githubClient.GetCommitMessage(commitSHA, repoURL)
 	if commitMsg == "" {
-		return fmt.Sprintf("Commit %s", commitSHA[:8])
+		if len(commitSHA) >= 8 {
+			return fmt.Sprintf("Commit %s", commitSHA[:8])
+		}
+		return fmt.Sprintf("Commit %s", commitSHA)
 	}
 
 	return commitMsg
