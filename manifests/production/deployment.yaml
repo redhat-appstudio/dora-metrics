@@ -27,7 +27,7 @@ spec:
       securityContext: {}
       containers:
       - name: dora-metrics
-        image: quay.io/konflux-ci/konflux-devprod/dora-metrics:e8dbce9804fcc33a6c88125fbf6a8f2abf311cbf
+        image: quay.io/konflux-ci/konflux-devprod/dora-metrics:latest
         imagePullPolicy: Always
         command: ["sh", "-c"]
         args: ["echo 'Starting DORA metrics...' && echo 'Waiting for Redis to be ready...' && sleep 20 && echo 'Starting application...' && ./main"]

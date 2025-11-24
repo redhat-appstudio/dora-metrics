@@ -108,12 +108,6 @@ func parseLogLevel(level LogLevel) (zapcore.Level, error) {
 	}
 }
 
-func Sync() {
-	if Logger != nil {
-		Logger.Sync()
-	}
-}
-
 func Debug(msg string, fields ...zap.Field) {
 	if Logger != nil {
 		Logger.WithOptions(zap.AddCallerSkip(1)).Debug(msg, fields...)

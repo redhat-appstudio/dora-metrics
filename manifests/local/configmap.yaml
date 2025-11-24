@@ -13,41 +13,22 @@ data:
   config.yaml: |
     server:
       port: "8080"
-      environment: "staging"
+      environment: "production"
       log_level: "info"
 
     webrca:
       enabled: true
       api_url: "https://api.openshift.com/api/web-rca/v1/incidents"
       interval: "1h"
-      # Offline token should be set via environment variable OFFLINE_TOKEN for security
-      # or you can set it here directly (not recommended for production)
-      # token: "your_offline_token_here"
 
     argocd:
-      enabled: true
+      enabled: false
       namespaces:
         - konflux-public-production
         - argocd
-
       # List of components to ignore (all other components will be monitored)
-      # These components will be excluded from monitoring across all known clusters
-      # Format: component-name (e.g., "test-component", "deprecated-service")
       # Leave empty to monitor all components
-      components_to_ignore:
-        - "monitoring"
-        - "openshift-gitops"
-        - "perf-team-prometheus-reader"
-        - "pulp-access-controller"
-        - "monitoring-workload-prometheus"
-        - "kubearchive"
-        - "tracing-workload-tracing"
-        - "cluster-secret-store"
-        - "build-templates"
-        - "policies"
-
-      # Known cluster names for application name parsing
-      # These are used to extract component and cluster information from application names
+      components_to_ignore: []
       known_clusters:
         - kflux-ocp-p01
         - kflux-osp-p01
@@ -59,12 +40,6 @@ data:
         - stone-prd-rh01
         - stone-prod-p01
         - stone-prod-p02
-
-      # Repository blacklist - repository URLs to exclude from commit processing
-      # Commits from these repositories will be filtered out from deployment payloads
-      # Format: full repository URL (e.g., "https://github.com/user/repo" or "https://github.com/user/repo.git")
-      repository_blacklist:
-        - "https://github.com/DindaPutriFN/imao1"
 
     storage:
       redis:
@@ -106,70 +81,19 @@ data:
         # - Sent to global project (project_id: "1")
         # - Sent to team-platform project (project_id: "2") if build-service is in team-platform's argocd_components
         teams:
-          - name: "konflux-ui"
-            project_id: "3"
-            argocd_components:
-              - "konflux-ui"
-              - "konflux-info"
-              - "konflux-kite"
-
-          - name: "konflux-build-team"
-            project_id: "6"
-            argocd_components:
-              - "build-service"
-              - "image-controller"
-              - "build-templates"
-              - "tekton-ci"
-
-          - name: "konflux-release-team"
-            project_id: "7"
-            argocd_components:
-              - "release"
-              - "internal-services"
-
-          - name: "konflux-integration-team"
-            project_id: "2"
-            argocd_components:
-              - "application-api"
-              - "integration"
-
-          - name: "konflux-vanguard-team"
-            project_id: "3"
-            argocd_components:
-              - "cluster-as-a-service"
-              - "cluster-secret-store"
-              - "crossplane-config"
-              - "crossplane-control-plane"
-              - "konflux-ci"
-              - "notification-controller"
-              - "project-controller"
-              - "smee-client"
-              - "squid"
-              - "trust-manager"
-
-          - name: "konflux-infrastructure-team"
-            project_id: "5"
-            argocd_components:
-              - "authentication"
-              - "backup"
-              - "cert-manager"
-              - "cost-management"
-              - "etcd-shield"
-              - "external-secrets-operator"
-              - "konflux-rbac"
-              - "kueue"
-              - "kyverno"
-              - "multi-platform-controller"
-              - "namespace-lister"
-              - "repository-validator"
-
-          - name: "konflux-mintmaker-team"
-            project_id: "4"
-            argocd_components:
-              - "mintmaker"
-
-          - name: "konflux-pipelines-team"
-            project_id: "8"
-            argocd_components:
-              - "pipeline-service"
-              - "vector-tekton-logs-collector"
+          # Example team configuration (uncomment and configure as needed):
+          # - name: "team-platform"  # Human-readable team name for logging
+          #   project_id: "2"  # DevLake project ID for this team's metrics dashboard
+          #   argocd_components:  # List of ArgoCD component names that belong to this team
+          #     - "build-service"  # Component name as extracted from ArgoCD application name
+          #     - "crossplane-control-plane"
+          # - name: "team-ui"
+          #   project_id: "3"
+          #   argocd_components:
+          #     - "konflux-ui"
+          #     - "konflux-info"
+           - name: "team-ui"
+             project_id: "3"
+             argocd_components:
+               - "konflux-ui"
+               - "konflux-info"

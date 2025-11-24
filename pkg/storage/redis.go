@@ -75,7 +75,7 @@ func (r *RedisClient) buildKey(parts ...string) string {
 
 // StoreDeployment stores a deployment record in Redis.
 func (r *RedisClient) StoreDeployment(ctx context.Context, deployment *DeploymentRecord) error {
-	key := r.buildKey(deployment.ApplicationName, deployment.ClusterName)
+	key := r.buildKey("deployment", deployment.ApplicationName, deployment.ClusterName)
 
 	// Convert to JSON
 	data, err := json.Marshal(deployment)
@@ -95,12 +95,12 @@ func (r *RedisClient) StoreDeployment(ctx context.Context, deployment *Deploymen
 
 // GetDeployment retrieves a deployment record from Redis.
 func (r *RedisClient) GetDeployment(ctx context.Context, appName, clusterName string) (*DeploymentRecord, error) {
-	key := r.buildKey(appName, clusterName)
+	key := r.buildKey("deployment", appName, clusterName)
 
 	data, err := r.client.Get(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
-			return nil, fmt.Errorf("deployment not found")
+			return nil, nil // No previous deployment found
 		}
 		return nil, fmt.Errorf("failed to get deployment record: %w", err)
 	}
@@ -113,38 +113,20 @@ func (r *RedisClient) GetDeployment(ctx context.Context, appName, clusterName st
 	return &deployment, nil
 }
 
-// IsNewDeployment checks if a deployment is new (not previously stored).
+// IsNewDeployment checks if a deployment is new (not previously stored or different revision).
 func (r *RedisClient) IsNewDeployment(ctx context.Context, appName, clusterName, revision string) (bool, error) {
 	existing, err := r.GetDeployment(ctx, appName, clusterName)
 	if err != nil {
-		return false, err
+		// If error getting deployment, treat as new to allow processing
+		return true, nil
 	}
 
 	if existing == nil {
 		return true, nil // No previous deployment
 	}
 
+	// This is a new deployment if the revision is different
 	return existing.Revision != revision, nil
-}
-
-// GetPreviousDeployment gets the most recent previous deployment for an application
-func (r *RedisClient) GetPreviousDeployment(ctx context.Context, appName, clusterName string) (*DeploymentRecord, error) {
-	key := fmt.Sprintf("%s:deployment:%s:%s", r.keyPrefix, appName, clusterName)
-
-	val, err := r.client.Get(ctx, key).Result()
-	if err != nil {
-		if err == redis.Nil {
-			return nil, nil // No previous deployment
-		}
-		return nil, err
-	}
-
-	var deployment DeploymentRecord
-	if err := json.Unmarshal([]byte(val), &deployment); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal deployment: %w", err)
-	}
-
-	return &deployment, nil
 }
 
 // SetCache stores a value in Redis cache with TTL
@@ -224,4 +206,26 @@ func (r *RedisClient) IsDevLakeCommitProcessed(ctx context.Context, commitSHA st
 	}
 
 	return true, nil
+}
+
+// AcquireProcessingLock attempts to acquire a distributed lock for processing a deployment.
+// Returns true if the lock was acquired, false if another process is already processing it.
+// The lock expires after 5 minutes to prevent deadlocks.
+func (r *RedisClient) AcquireProcessingLock(ctx context.Context, appName, clusterName, revision string) (bool, error) {
+	lockKey := r.buildKey("lock", "processing", appName, clusterName, revision)
+
+	// Use SETNX (SET if Not eXists) to atomically acquire the lock
+	// Lock expires after 5 minutes to prevent deadlocks if a process crashes
+	acquired, err := r.client.SetNX(ctx, lockKey, "locked", 5*time.Minute).Result()
+	if err != nil {
+		return false, fmt.Errorf("failed to acquire processing lock: %w", err)
+	}
+
+	return acquired, nil
+}
+
+// ReleaseProcessingLock releases a distributed lock for processing a deployment.
+func (r *RedisClient) ReleaseProcessingLock(ctx context.Context, appName, clusterName, revision string) error {
+	lockKey := r.buildKey("lock", "processing", appName, clusterName, revision)
+	return r.client.Del(ctx, lockKey).Err()
 }
