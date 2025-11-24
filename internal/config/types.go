@@ -92,6 +92,10 @@ type ArgoCDConfig struct {
 
 	// Known cluster names for parsing (e.g., ["kflux-ocp-p01", "pentest-p01"])
 	KnownClusters []string
+
+	// Repository blacklist - repository URLs to exclude from commit processing
+	// Commits from these repositories will be filtered out from deployment payloads
+	RepositoryBlacklist []string
 }
 
 // ArgoCDYAMLConfig represents ArgoCD monitoring configuration from YAML files.
@@ -110,6 +114,10 @@ type ArgoCDYAMLConfig struct {
 
 	// Known cluster names for parsing (e.g., ["kflux-ocp-p01", "pentest-p01"])
 	KnownClusters []string `yaml:"known_clusters"`
+
+	// Repository blacklist - repository URLs to exclude from commit processing
+	// Commits from these repositories will be filtered out from deployment payloads
+	RepositoryBlacklist []string `yaml:"repository_blacklist"`
 }
 
 // StorageConfig holds configuration for deployment history storage.

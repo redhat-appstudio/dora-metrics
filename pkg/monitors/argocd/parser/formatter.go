@@ -82,7 +82,10 @@ func (f *Formatter) FormatDeployment(
 	startedDate, finishedDate := f.calculateTimeline(devlakeCommits, deployedAt)
 
 	// Format dates using DevLake format
-	createdDateStr := f.devlake.FormatDevLakeDate(deployedAt)
+	// CreatedDate should be the same as StartedDate (when the commit was created)
+	// StartedDate is when the commit was created (earliest commit in the deployment)
+	// FinishedDate is when it was deployed in production (from history)
+	createdDateStr := f.devlake.FormatDevLakeDate(startedDate)
 	startedDateStr := f.devlake.FormatDevLakeDate(startedDate)
 	finishedDateStr := f.devlake.FormatDevLakeDate(finishedDate)
 
@@ -108,16 +111,9 @@ func (f *Formatter) createDevLakeCommits(
 	devlakeCommits := make([]integrations.DevLakeDeploymentCommit, 0) // Initialize as empty slice, not nil
 
 	// Add all commits (including infra-deployments commit which is already in the commits slice)
+	// Note: We include all commits in the deployment, even if they were sent before.
+	// This allows the same commit to be part of multiple deployments (e.g., rollback and redeploy).
 	for _, commit := range commits {
-		// Check if this commit has already been sent to DevLake for this component
-		if f.storage != nil {
-			alreadySent, err := f.storage.IsDevLakeCommitProcessed(context.Background(), commit.SHA, component)
-			if err != nil {
-				logger.Warnf("Failed to check if commit %s was already sent to DevLake for component %s: %v", commit.SHA, component, err)
-			} else if alreadySent {
-				continue
-			}
-		}
 
 		displayTitle := commit.Message
 		name := commit.Message

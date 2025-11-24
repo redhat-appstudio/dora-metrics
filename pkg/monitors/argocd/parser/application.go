@@ -45,8 +45,8 @@ func (p *ApplicationParser) ParseApplication(app *v1alpha1.Application) (*api.Ap
 	return appInfo, nil
 }
 
-// getDeploymentRevision extracts the actual deployment revision from the application.
-// It uses the sync revision as the current deployment revision.
+// getDeploymentRevision extracts the deployment revision from the application.
+// It uses the sync revision, which will be validated against history in the event processor.
 func (p *ApplicationParser) getDeploymentRevision(app *v1alpha1.Application) string {
 	return app.Status.Sync.Revision
 }

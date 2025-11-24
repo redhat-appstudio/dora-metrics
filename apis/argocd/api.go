@@ -13,13 +13,16 @@ func RegisterRoutes(app *fiber.App, handler *Handler) {
 	argocd := v1.Group("/argocd")
 
 	if handler != nil {
-		// Prometheus metrics endpoint
-		argocd.Get("/metrics", handler.ListApplications)
+		// JSON endpoint
+		argocd.Get("/applications", handler.ListApplicationsJSON)
+		// TOON endpoint
+		argocd.Get("/applications.toon", handler.ListApplicationsTOON)
 	} else {
-		// Add a fallback endpoint when handler is nil
-		argocd.Get("/metrics", func(c *fiber.Ctx) error {
-			c.Set("Content-Type", "text/plain")
-			return c.Status(503).SendString("# ERROR: ArgoCD client not available\n")
+		// Add fallback endpoint when handler is nil
+		argocd.Get("/applications", func(c *fiber.Ctx) error {
+			return c.Status(503).JSON(fiber.Map{
+				"error": "ArgoCD client not available",
+			})
 		})
 	}
 }

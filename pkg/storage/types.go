@@ -10,16 +10,6 @@ type CommitInfo struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
-// PRInfo represents PR information for a commit
-type PRInfo struct {
-	Number    int        `json:"number"`
-	Title     string     `json:"title"`
-	CreatedAt time.Time  `json:"created_at"`
-	MergedAt  *time.Time `json:"merged_at,omitempty"`
-	HTMLURL   string     `json:"html_url"`
-	State     string     `json:"state"`
-}
-
 // DeploymentRecord represents a single deployment record stored in Redis.
 // It contains all the information about a deployment that needs to be tracked.
 type DeploymentRecord struct {

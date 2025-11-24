@@ -15,6 +15,17 @@ import (
 	"github.com/redhat-appstudio/dora-metrics/pkg/logger"
 )
 
+const (
+	// DevLake date format - pre-defined for better performance
+	devLakeDateFormat = "2006-01-02T15:04:05+00:00"
+
+	// Retry configuration
+	maxRetries        = 5
+	initialBackoff    = 1 * time.Second
+	maxBackoff        = 16 * time.Second
+	backoffMultiplier = 2
+)
+
 // DevLakeIssue represents the DevLake issue payload structure
 // Following the official DevLake webhook API documentation
 type DevLakeIssue struct {
@@ -267,21 +278,26 @@ func (d *DevLakeIntegration) SendIncidentEvent(ctx context.Context, incident Inc
 	logger.Debugf("DevLake API URL: %s", url)
 	logger.Debugf("DevLake payload: %s", string(payload))
 
-	// Create HTTP request
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(payload))
+	// Create HTTP request with GetBody to allow retries
+	reqBody := bytes.NewBuffer(payload)
+	req, err := http.NewRequestWithContext(ctx, "POST", url, reqBody)
 	if err != nil {
 		return fmt.Errorf("failed to create DevLake request: %w", err)
+	}
+
+	// Set GetBody to allow request body to be re-read on retries
+	req.GetBody = func() (io.ReadCloser, error) {
+		return io.NopCloser(bytes.NewBuffer(payload)), nil
 	}
 
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
-	// Send request
-	client := &http.Client{Timeout: time.Duration(d.timeoutSeconds) * time.Second}
-	resp, err := client.Do(req)
+	// Send request with retry logic
+	resp, err := d.executeWithRetry(ctx, req, "SendIncidentEvent")
 	if err != nil {
-		return fmt.Errorf("failed to send request to DevLake: %w", err)
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -323,11 +339,10 @@ func (d *DevLakeIntegration) CloseIncident(ctx context.Context, incidentID strin
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
-	// Send request
-	client := &http.Client{Timeout: time.Duration(d.timeoutSeconds) * time.Second}
-	resp, err := client.Do(req)
+	// Send request with retry logic
+	resp, err := d.executeWithRetry(ctx, req, "CloseIncident")
 	if err != nil {
-		return fmt.Errorf("failed to send close request to DevLake: %w", err)
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -401,21 +416,27 @@ func (d *DevLakeIntegration) sendDeploymentToProject(ctx context.Context, deploy
 	logger.Debugf("DevLake deployment API URL: %s (project: %s)", url, projectName)
 	logger.Debugf("DevLake deployment payload: %s", string(payload))
 
-	// Create HTTP request
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(payload))
+	// Create HTTP request with GetBody to allow retries
+	reqBody := bytes.NewBuffer(payload)
+	req, err := http.NewRequestWithContext(ctx, "POST", url, reqBody)
 	if err != nil {
 		return fmt.Errorf("failed to create DevLake deployment request: %w", err)
+	}
+
+	// Set GetBody to allow request body to be re-read on retries
+	req.GetBody = func() (io.ReadCloser, error) {
+		return io.NopCloser(bytes.NewBuffer(payload)), nil
 	}
 
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
-	// Send request
-	client := &http.Client{Timeout: time.Duration(d.timeoutSeconds) * time.Second}
-	resp, err := client.Do(req)
+	// Send request with retry logic
+	operation := fmt.Sprintf("SendDeploymentEvent to %s", projectName)
+	resp, err := d.executeWithRetry(ctx, req, operation)
 	if err != nil {
-		return fmt.Errorf("failed to send deployment request to DevLake: %w", err)
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -492,10 +513,106 @@ func (d *DevLakeIntegration) getDevLakeToken() (string, error) {
 	return token, nil
 }
 
-const (
-	// DevLake date format - pre-defined for better performance
-	devLakeDateFormat = "2006-01-02T15:04:05+00:00"
-)
+// isRetryableError checks if an error or status code should trigger a retry
+func isRetryableError(err error, statusCode int) bool {
+	// Retry on network errors
+	if err != nil {
+		return true
+	}
+	// Retry on 5xx server errors and 429 (Too Many Requests)
+	if statusCode >= 500 || statusCode == 429 {
+		return true
+	}
+	// Don't retry on 4xx client errors (except 429)
+	return false
+}
+
+// executeWithRetry executes an HTTP request with retry logic and exponential backoff
+func (d *DevLakeIntegration) executeWithRetry(ctx context.Context, req *http.Request, operation string) (*http.Response, error) {
+	client := &http.Client{Timeout: time.Duration(d.timeoutSeconds) * time.Second}
+	var lastErr error
+	var lastResp *http.Response
+
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		if attempt > 0 {
+			// Calculate backoff for this retry (exponential backoff)
+			backoff := initialBackoff * time.Duration(1<<uint(attempt-1)) // 2^(attempt-1) seconds
+			if backoff > maxBackoff {
+				backoff = maxBackoff
+			}
+
+			// Wait before retrying (exponential backoff)
+			logger.Warnf("Retrying %s (attempt %d/%d) after %v", operation, attempt, maxRetries+1, backoff)
+			select {
+			case <-ctx.Done():
+				return nil, fmt.Errorf("context cancelled during retry: %w", ctx.Err())
+			case <-time.After(backoff):
+				// Continue with retry
+			}
+
+			// Recreate the request body if it was consumed in previous attempt
+			if req.Body != nil && req.GetBody != nil {
+				newBody, err := req.GetBody()
+				if err == nil {
+					req.Body = newBody
+				}
+			}
+		}
+
+		// Execute the request
+		resp, err := client.Do(req)
+		lastResp = resp
+		lastErr = err
+
+		// Check if we should retry
+		statusCode := 0
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+
+		if !isRetryableError(err, statusCode) {
+			// Success or non-retryable error, return immediately
+			if err != nil {
+				return nil, fmt.Errorf("failed to send request to DevLake: %w", err)
+			}
+			if statusCode >= 400 {
+				// Read response body for error details
+				body, readErr := io.ReadAll(resp.Body)
+				resp.Body.Close()
+				if readErr != nil {
+					return nil, fmt.Errorf("DevLake API returned error status %d (failed to read response body: %v)", statusCode, readErr)
+				}
+				return nil, fmt.Errorf("DevLake API returned error status %d: %s", statusCode, string(body))
+			}
+			// Success
+			return resp, nil
+		}
+
+		// Close response body if we're going to retry
+		if resp != nil {
+			io.Copy(io.Discard, resp.Body) // Drain body
+			resp.Body.Close()
+		}
+
+		// Log the error for retryable cases
+		if err != nil {
+			logger.Warnf("%s failed (attempt %d/%d): %v", operation, attempt+1, maxRetries+1, err)
+		} else if statusCode >= 500 {
+			logger.Warnf("%s returned status %d (attempt %d/%d)", operation, statusCode, attempt+1, maxRetries+1)
+		}
+	}
+
+	// All retries exhausted
+	if lastErr != nil {
+		return nil, fmt.Errorf("%s failed after %d retries: %w", operation, maxRetries, lastErr)
+	}
+	if lastResp != nil {
+		body, _ := io.ReadAll(lastResp.Body)
+		lastResp.Body.Close()
+		return nil, fmt.Errorf("%s returned error status %d after %d retries: %s", operation, lastResp.StatusCode, maxRetries, string(body))
+	}
+	return nil, fmt.Errorf("%s failed after %d retries: unknown error", operation, maxRetries)
+}
 
 // FormatDevLakeDate formats time to DevLake required format: 2020-01-01T12:00:00+00:00
 func (d *DevLakeIntegration) FormatDevLakeDate(t time.Time) string {

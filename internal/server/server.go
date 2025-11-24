@@ -57,7 +57,7 @@ func New(cfg *config.Config) *Server {
 		cfg.Integration.DevLake.TimeoutSeconds,
 		cfg.Integration.DevLake.Teams,
 	)
-	
+
 	// Log DevLake integration configuration
 	if cfg.Integration.DevLake.Enabled {
 		logger.Infof("DevLake integration: enabled (base URL: %s, global project ID: %s)", cfg.Integration.DevLake.BaseURL, cfg.Integration.DevLake.ProjectID)
@@ -102,10 +102,11 @@ func New(cfg *config.Config) *Server {
 	var argocdClient *argocdclient.Clientset
 	if cfg.ArgoCD.Enabled {
 		argocdConfig := &argocdmonitor.Config{
-			Enabled:           cfg.ArgoCD.Enabled,
-			Namespaces:        cfg.ArgoCD.Namespaces,
-			ComponentsToIgnore: cfg.ArgoCD.ComponentsToIgnore,
-			KnownClusters:     cfg.ArgoCD.KnownClusters,
+			Enabled:             cfg.ArgoCD.Enabled,
+			Namespaces:          cfg.ArgoCD.Namespaces,
+			ComponentsToIgnore:  cfg.ArgoCD.ComponentsToIgnore,
+			KnownClusters:       cfg.ArgoCD.KnownClusters,
+			RepositoryBlacklist: cfg.ArgoCD.RepositoryBlacklist,
 		}
 
 		argocdMonitorClient, err := argocdmonitor.CreateArgoCDClient(argocdConfig)
@@ -119,7 +120,7 @@ func New(cfg *config.Config) *Server {
 	}
 
 	// Setup routes
-	handlers.SetupRoutes(app, argocdClient, cfg.ArgoCD.Namespaces, cfg.ArgoCD.ComponentsToIgnore, cfg.ArgoCD.KnownClusters)
+	handlers.SetupRoutes(app, argocdClient, cfg.ArgoCD.Namespaces, cfg.ArgoCD.ComponentsToIgnore, cfg.ArgoCD.KnownClusters, cfg.WebRCA.Token)
 
 	// Initialize storage client if enabled
 	var storageClient *storage.RedisClient
@@ -169,10 +170,11 @@ func New(cfg *config.Config) *Server {
 		argocdmonitor.SetKnownClusters(cfg.ArgoCD.KnownClusters)
 
 		argocdConfig := &argocdmonitor.Config{
-			Enabled:           cfg.ArgoCD.Enabled,
-			Namespaces:        cfg.ArgoCD.Namespaces,
-			ComponentsToIgnore: cfg.ArgoCD.ComponentsToIgnore,
-			KnownClusters:     cfg.ArgoCD.KnownClusters,
+			Enabled:             cfg.ArgoCD.Enabled,
+			Namespaces:          cfg.ArgoCD.Namespaces,
+			ComponentsToIgnore:  cfg.ArgoCD.ComponentsToIgnore,
+			KnownClusters:       cfg.ArgoCD.KnownClusters,
+			RepositoryBlacklist: cfg.ArgoCD.RepositoryBlacklist,
 		}
 
 		// Create ArgoCD monitor with storage client
@@ -185,6 +187,9 @@ func New(cfg *config.Config) *Server {
 			logger.Fatal("ArgoCD monitor is nil after initialization")
 		}
 		logger.Infof("ArgoCD application monitoring enabled - Namespaces: %v, Known clusters: %d", cfg.ArgoCD.Namespaces, len(cfg.ArgoCD.KnownClusters))
+		if len(cfg.ArgoCD.RepositoryBlacklist) > 0 {
+			logger.Infof("ArgoCD repository blacklist: %d repository(ies) will be excluded from commit processing", len(cfg.ArgoCD.RepositoryBlacklist))
+		}
 	}
 
 	return &Server{

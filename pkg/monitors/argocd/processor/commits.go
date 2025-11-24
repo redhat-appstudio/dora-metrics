@@ -5,7 +5,6 @@ package processor
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/redhat-appstudio/dora-metrics/pkg/logger"
 	"github.com/redhat-appstudio/dora-metrics/pkg/monitors/argocd/api"
@@ -20,168 +19,150 @@ type CommitProcessor struct {
 	githubClient   github.Client
 	storage        *storage.RedisClient
 	imageProcessor *ImageProcessor
+	commitHelper   *commitHelper
+	blacklist      []string
 }
 
 // NewCommitProcessor creates a new commit processor instance.
-func NewCommitProcessor(githubClient github.Client, storage *storage.RedisClient) *CommitProcessor {
+func NewCommitProcessor(githubClient github.Client, storage *storage.RedisClient, repositoryBlacklist []string) *CommitProcessor {
+	if len(repositoryBlacklist) > 0 {
+		logger.Infof("Repository blacklist initialized with %d repository(ies): %v", len(repositoryBlacklist), repositoryBlacklist)
+	} else {
+		logger.Debugf("Repository blacklist is empty - no repositories will be filtered")
+	}
 	return &CommitProcessor{
 		githubClient:   githubClient,
 		storage:        storage,
 		imageProcessor: NewImageProcessor(githubClient),
+		commitHelper:   newCommitHelper(githubClient),
+		blacklist:      repositoryBlacklist,
 	}
 }
 
 // GetCommitHistoryForDeployment gets the complete commit history for a deployment.
 func (cp *CommitProcessor) GetCommitHistoryForDeployment(app *v1alpha1.Application, appInfo *api.ApplicationInfo) []storage.CommitInfo {
+	// Early check: Skip if revision is empty - return empty, no logs
+	if appInfo.Revision == "" {
+		return []storage.CommitInfo{}
+	}
+
 	// Extract and validate images
 	validImages := cp.imageProcessor.ExtractValidImages(appInfo.Images)
 	if len(validImages) == 0 {
-		logger.Warnf("No valid commit images found for application %s, will only include infra-deployments commit", app.Name)
+		logger.Debugf("No valid commit images found for application %s, will only include infra-deployments commit", app.Name)
 	}
 
 	// Get commit history for changed images
 	commitHistory, err := cp.getCommitHistoryForChangedImages(app, appInfo, validImages)
 	if err != nil {
-		logger.Warnf("Failed to get commit history: %v", err)
+		// Only log if it's not an empty revision error
+		if appInfo.Revision != "" {
+			logger.Debugf("Failed to get commit history for %s: %v", app.Name, err)
+		}
 		commitHistory = []storage.CommitInfo{}
 	}
 
 	// If no commit history from changes, at least include current commits from images
 	if len(commitHistory) == 0 {
 		logger.Debugf("No commit history from changes, trying createCommitsFromImages")
-		commitHistory = cp.createCommitsFromImages(app, validImages)
+		commitHistory = cp.createCommitsFromImages(app, appInfo, validImages)
 		logger.Debugf("createCommitsFromImages returned %d commits", len(commitHistory))
 	}
 
 	logger.Debugf("Final commit history has %d commits for application %s", len(commitHistory), app.Name)
-	return commitHistory
+
+	// Filter out commits from blacklisted repositories
+	// IMPORTANT: Only commits from blacklisted repos are removed - all other commits are kept
+	filteredHistory := cp.filterBlacklistedRepos(commitHistory)
+	if len(filteredHistory) < len(commitHistory) {
+		logger.Infof("Filtered out %d commit(s) from blacklisted repositories for application %s, keeping %d commit(s) for DevLake payload",
+			len(commitHistory)-len(filteredHistory), app.Name, len(filteredHistory))
+	}
+
+	// Return filtered history - if any commits remain, they will be included in the payload
+	return filteredHistory
+}
+
+// filterBlacklistedRepos filters out commits from blacklisted repositories.
+func (cp *CommitProcessor) filterBlacklistedRepos(commits []storage.CommitInfo) []storage.CommitInfo {
+	if len(cp.blacklist) == 0 {
+		logger.Debugf("No repository blacklist configured, skipping filter")
+		return commits
+	}
+
+	// Normalize blacklist URLs for comparison (remove .git suffix and trailing slashes)
+	normalizedBlacklist := make(map[string]bool)
+	for _, repo := range cp.blacklist {
+		normalized := cp.commitHelper.normalizeRepoURL(repo)
+		normalizedBlacklist[normalized] = true
+		logger.Debugf("Blacklisted repository (normalized): %s -> %s", repo, normalized)
+	}
+
+	var filtered []storage.CommitInfo
+	for _, commit := range commits {
+		normalizedRepo := cp.commitHelper.normalizeRepoURL(commit.RepoURL)
+		if normalizedBlacklist[normalizedRepo] {
+			logger.Infof("FILTERED: Commit %s from blacklisted repository %s (normalized: %s) - will NOT be included in DevLake payload",
+				commit.SHA, commit.RepoURL, normalizedRepo)
+			continue
+		}
+		filtered = append(filtered, commit)
+	}
+
+	if len(filtered) < len(commits) {
+		logger.Infof("Repository blacklist filter: removed %d commit(s) from %d total commits",
+			len(commits)-len(filtered), len(commits))
+	}
+
+	return filtered
 }
 
 // createCommitsFromImages creates commit info from current image tags and revision.
-func (cp *CommitProcessor) createCommitsFromImages(app *v1alpha1.Application, validImages []string) []storage.CommitInfo {
-	logger.Infof("createCommitsFromImages called with %d valid images", len(validImages))
+func (cp *CommitProcessor) createCommitsFromImages(app *v1alpha1.Application, appInfo *api.ApplicationInfo, validImages []string) []storage.CommitInfo {
+	deployedRevision := appInfo.Revision
+	if deployedRevision == "" {
+		return []storage.CommitInfo{}
+	}
+
+	logger.Debugf("createCommitsFromImages called with %d valid images for %s", len(validImages), app.Name)
 	var commits []storage.CommitInfo
-	seen := make(map[string]bool)
 
-	// Always include the deployment revision commit - find its repository first
-	revisionRepoURL, err := cp.githubClient.FindRepositoryForCommit(app.Status.Sync.Revision)
-	if err != nil {
-		logger.Warnf("Failed to find repository for revision %s: %v", app.Status.Sync.Revision, err)
-		// Try to get from history as fallback
-		revisionRepoURL = cp.getRepoURLFromHistory(app, app.Status.Sync.Revision)
-		if revisionRepoURL == "" {
-			// Last resort fallback to infra-deployments
-			revisionRepoURL = "https://github.com/redhat-appstudio/infra-deployments.git"
-			logger.Warnf("Using fallback infra-deployments repo for revision %s", app.Status.Sync.Revision)
-		} else {
-			logger.Infof("Found revision %s repository from history: %s", app.Status.Sync.Revision, revisionRepoURL)
-		}
-	} else {
-		logger.Infof("Found revision %s repository via GitHub search: %s", app.Status.Sync.Revision, revisionRepoURL)
+	// Add deployment revision commit
+	revisionCommit := cp.createCommitFromSHA(app, deployedRevision)
+	if revisionCommit.SHA != "" {
+		commits = append(commits, revisionCommit)
 	}
-
-	// Validate revision is not empty
-	if app.Status.Sync.Revision == "" {
-		logger.Errorf("CRITICAL: Application %s has empty revision - cannot process", app.Name)
-		return []storage.CommitInfo{}
-	}
-
-	commitMsg := cp.githubClient.GetCommitMessage(app.Status.Sync.Revision, revisionRepoURL)
-	if commitMsg == "" {
-		if len(app.Status.Sync.Revision) >= 8 {
-			commitMsg = fmt.Sprintf("Commit %s", app.Status.Sync.Revision[:8])
-		} else {
-			commitMsg = fmt.Sprintf("Commit %s", app.Status.Sync.Revision)
-		}
-	}
-
-	// Normalize the repository URL
-	normalizedRepoURL := cp.normalizeRepoURL(revisionRepoURL)
-
-	// Get commit creation date - this is REQUIRED for DevLake compliance
-	commitDate := cp.githubClient.GetCommitDate(app.Status.Sync.Revision, revisionRepoURL)
-	if commitDate.IsZero() {
-		logger.Errorf("CRITICAL: Could not get commit date for %s from %s - this violates DevLake requirements", app.Status.Sync.Revision, revisionRepoURL)
-		// Don't use fallback - we need the real commit date
-		// Return empty slice since we can't process without commit date
-		return []storage.CommitInfo{}
-	}
-
-	commits = append(commits, storage.CommitInfo{
-		SHA:       app.Status.Sync.Revision,
-		Message:   commitMsg,
-		RepoURL:   normalizedRepoURL,
-		CreatedAt: commitDate,
-	})
-	seen[app.Status.Sync.Revision] = true
 
 	// Add commits from valid image tags (only if different from revision)
 	for _, image := range validImages {
 		tag := cp.imageProcessor.extractTagFromImage(image)
-		if tag == "" {
-			logger.Warnf("Skipping image %s - no tag extracted", image)
-			continue // Skip if no tag
+		if tag == "" || tag == deployedRevision {
+			continue
 		}
 
-		// Check if this commit is already added (by SHA only, since same commit can be in different repos)
-		alreadyAdded := false
-		for _, existingCommit := range commits {
-			if existingCommit.SHA == tag {
-				alreadyAdded = true
-				break
-			}
-		}
-		if alreadyAdded {
-			continue // Skip if already added
+		if cp.commitHelper.isCommitAlreadyAdded(commits, tag) {
+			continue
 		}
 
-		// Find repository for this commit
-		imageRepoURL, err := cp.githubClient.FindRepositoryForCommit(tag)
-		if err != nil {
-			logger.Warnf("Failed to find repository for commit %s: %v", tag, err)
-			// Try to get from history as fallback
-			imageRepoURL = cp.getRepoURLFromHistory(app, tag)
-			if imageRepoURL == "" {
-				logger.Warnf("Skipping commit %s - no repository found", tag)
-				continue // Skip if we can't find the repository
-			} else {
-				logger.Infof("Found commit %s repository from history: %s", tag, imageRepoURL)
-			}
-		} else {
-			logger.Infof("Found commit %s repository via GitHub search: %s", tag, imageRepoURL)
+		imageCommit := cp.createCommitFromSHA(app, tag)
+		if imageCommit.SHA != "" {
+			commits = append(commits, imageCommit)
 		}
-
-		// Get commit message
-		imageCommitMsg := cp.githubClient.GetCommitMessage(tag, imageRepoURL)
-		if imageCommitMsg == "" {
-			if len(tag) >= 8 {
-				imageCommitMsg = fmt.Sprintf("Commit %s", tag[:8])
-			} else {
-				imageCommitMsg = fmt.Sprintf("Commit %s", tag)
-			}
-		}
-
-		// Get commit creation date - this is REQUIRED for DevLake compliance
-		imageCommitDate := cp.githubClient.GetCommitDate(tag, imageRepoURL)
-		if imageCommitDate.IsZero() {
-			logger.Errorf("CRITICAL: Could not get commit date for image %s from %s - this violates DevLake requirements", tag, imageRepoURL)
-			// Don't use fallback - we need the real commit date
-			continue // Skip this image if we can't get its commit date
-		}
-
-		// Normalize the repository URL
-		normalizedImageRepoURL := cp.normalizeRepoURL(imageRepoURL)
-
-		commits = append(commits, storage.CommitInfo{
-			SHA:       tag,
-			Message:   imageCommitMsg,
-			RepoURL:   normalizedImageRepoURL,
-			CreatedAt: imageCommitDate,
-		})
-		seen[tag] = true
 	}
 
 	return commits
+}
+
+// createCommitFromSHA creates a CommitInfo from a commit SHA.
+func (cp *CommitProcessor) createCommitFromSHA(app *v1alpha1.Application, commitSHA string) storage.CommitInfo {
+	repoURL := cp.commitHelper.findRepositoryForCommit(app, commitSHA)
+	message, date, err := cp.commitHelper.getCommitInfo(commitSHA, repoURL)
+	if err != nil {
+		logger.Errorf("CRITICAL: Could not get commit info for %s: %v - violates DevLake requirements", commitSHA, err)
+		return storage.CommitInfo{}
+	}
+
+	return cp.commitHelper.createCommitInfo(commitSHA, message, repoURL, date)
 }
 
 // getCommitHistoryForChangedImages gets commit history for images that have changed.
@@ -190,63 +171,28 @@ func (cp *CommitProcessor) getCommitHistoryForChangedImages(
 	appInfo *api.ApplicationInfo,
 	validImages []string,
 ) ([]storage.CommitInfo, error) {
-	// Validate revision is not empty - check early before processing
-	if app.Status.Sync.Revision == "" {
-		logger.Errorf("CRITICAL: Application %s has empty revision - cannot process", app.Name)
-		return []storage.CommitInfo{}, fmt.Errorf("application %s has empty revision", app.Name)
+	// Use the revision from appInfo (sync revision, validated against history in event processor)
+	deployedRevision := appInfo.Revision
+
+	// Early check: Skip if revision is empty - return empty, no logs
+	if deployedRevision == "" {
+		return []storage.CommitInfo{}, nil
 	}
 
 	var allCommits []storage.CommitInfo
 	seen := make(map[string]bool) // Track by SHA only to prevent duplicates
 
-	// Always include the deployment revision commit - find its repository first
-	revisionRepoURL, err := cp.githubClient.FindRepositoryForCommit(app.Status.Sync.Revision)
-	if err != nil {
-		logger.Warnf("Failed to find repository for revision %s: %v", app.Status.Sync.Revision, err)
-		// Try to get from history as fallback
-		revisionRepoURL = cp.getRepoURLFromHistory(app, app.Status.Sync.Revision)
-		if revisionRepoURL == "" {
-			// Last resort fallback to infra-deployments
-			revisionRepoURL = "https://github.com/redhat-appstudio/infra-deployments.git"
-			logger.Warnf("Using fallback infra-deployments repo for revision %s", app.Status.Sync.Revision)
-		} else {
-			logger.Infof("Found revision %s repository from history: %s", app.Status.Sync.Revision, revisionRepoURL)
-		}
-	} else {
-		logger.Infof("Found revision %s repository via GitHub search: %s", app.Status.Sync.Revision, revisionRepoURL)
+	// Always include the deployment revision commit
+	revisionCommit := cp.createCommitFromSHA(app, deployedRevision)
+	if revisionCommit.SHA == "" {
+		return []storage.CommitInfo{}, fmt.Errorf("failed to get commit info for %s", deployedRevision)
 	}
-
-	commitMsg := cp.githubClient.GetCommitMessage(app.Status.Sync.Revision, revisionRepoURL)
-	if commitMsg == "" {
-		if len(app.Status.Sync.Revision) >= 8 {
-			commitMsg = fmt.Sprintf("Commit %s", app.Status.Sync.Revision[:8])
-		} else {
-			commitMsg = fmt.Sprintf("Commit %s", app.Status.Sync.Revision)
-		}
-	}
-
-	// Normalize the repository URL
-	normalizedRepoURL := cp.normalizeRepoURL(revisionRepoURL)
-
-	// Get commit creation date - this is REQUIRED for DevLake compliance
-	commitDate := cp.githubClient.GetCommitDate(app.Status.Sync.Revision, revisionRepoURL)
-	if commitDate.IsZero() {
-		logger.Errorf("CRITICAL: Could not get commit date for %s from %s - this violates DevLake requirements", app.Status.Sync.Revision, revisionRepoURL)
-		// Don't use fallback - we need the real commit date
-		return []storage.CommitInfo{}, fmt.Errorf("failed to get commit date for %s", app.Status.Sync.Revision)
-	}
-
-	allCommits = append(allCommits, storage.CommitInfo{
-		SHA:       app.Status.Sync.Revision,
-		Message:   commitMsg,
-		RepoURL:   normalizedRepoURL,
-		CreatedAt: commitDate,
-	})
-	seen[app.Status.Sync.Revision] = true
+	allCommits = append(allCommits, revisionCommit)
+	seen[deployedRevision] = true
 
 	// Get previous deployment
 	prevDeployment, err := cp.storage.GetDeployment(context.Background(), appInfo.Component, appInfo.Cluster)
-	if err != nil {
+	if err != nil || prevDeployment == nil {
 		logger.Debugf("No previous deployment found for cluster %s, will add current image commits", appInfo.Cluster)
 		// If no previous deployment, add current image commits only if there are valid images
 		if len(validImages) == 0 {
@@ -273,48 +219,12 @@ func (cp *CommitProcessor) getCommitHistoryForChangedImages(
 				continue // Skip if already added
 			}
 
-			// Find repository for this commit
-			imageRepoURL, err := cp.githubClient.FindRepositoryForCommit(tag)
-			if err != nil {
-				logger.Warnf("Failed to find repository for commit %s: %v", tag, err)
-				// Try to get from history as fallback
-				imageRepoURL = cp.getRepoURLFromHistory(app, tag)
-				if imageRepoURL == "" {
-					logger.Warnf("Skipping commit %s - no repository found", tag)
-					continue // Skip if we can't find the repository
-				} else {
-					logger.Infof("Found commit %s repository from history: %s", tag, imageRepoURL)
-				}
-			} else {
-				logger.Infof("Found commit %s repository via GitHub search: %s", tag, imageRepoURL)
+			// Create commit info for this image tag
+			imageCommit := cp.createCommitFromSHA(app, tag)
+			if imageCommit.SHA == "" {
+				continue // Skip if we can't get commit info
 			}
-
-			imageCommitMsg := cp.githubClient.GetCommitMessage(tag, imageRepoURL)
-			if imageCommitMsg == "" {
-				if len(tag) >= 8 {
-					imageCommitMsg = fmt.Sprintf("Commit %s", tag[:8])
-				} else {
-					imageCommitMsg = fmt.Sprintf("Commit %s", tag)
-				}
-			}
-
-			// Get commit creation date - this is REQUIRED for DevLake compliance
-			imageCommitDate := cp.githubClient.GetCommitDate(tag, imageRepoURL)
-			if imageCommitDate.IsZero() {
-				logger.Errorf("CRITICAL: Could not get commit date for image %s from %s - this violates DevLake requirements", tag, imageRepoURL)
-				// Don't use fallback - we need the real commit date
-				continue // Skip this image if we can't get its commit date
-			}
-
-			// Normalize the repository URL
-			normalizedImageRepoURL := cp.normalizeRepoURL(imageRepoURL)
-
-			allCommits = append(allCommits, storage.CommitInfo{
-				SHA:       tag,
-				Message:   imageCommitMsg,
-				RepoURL:   normalizedImageRepoURL,
-				CreatedAt: imageCommitDate,
-			})
+			allCommits = append(allCommits, imageCommit)
 			seen[tag] = true
 		}
 		return allCommits, nil
@@ -341,10 +251,7 @@ func (cp *CommitProcessor) getCommitHistoryForChangedImages(
 		// Add unique commits from history
 		for _, commit := range commits {
 			if !seen[commit.SHA] {
-				// Normalize the repository URL
-				normalizedCommitRepoURL := cp.normalizeRepoURL(commit.RepoURL)
-				commit.RepoURL = normalizedCommitRepoURL
-
+				commit.RepoURL = cp.commitHelper.normalizeRepoURL(commit.RepoURL)
 				allCommits = append(allCommits, commit)
 				seen[commit.SHA] = true
 			}
@@ -352,22 +259,4 @@ func (cp *CommitProcessor) getCommitHistoryForChangedImages(
 	}
 
 	return allCommits, nil
-}
-
-// getRepoURLFromHistory extracts repository URL from ArgoCD application history.
-func (cp *CommitProcessor) getRepoURLFromHistory(app *v1alpha1.Application, commitSHA string) string {
-	for _, historyItem := range app.Status.History {
-		if historyItem.Revision == commitSHA && historyItem.Source.RepoURL != "" {
-			return historyItem.Source.RepoURL
-		}
-	}
-	return ""
-}
-
-// normalizeRepoURL normalizes repository URLs for comparison.
-func (cp *CommitProcessor) normalizeRepoURL(repoURL string) string {
-	// Remove .git suffix and normalize
-	normalized := strings.TrimSuffix(repoURL, ".git")
-	normalized = strings.TrimSuffix(normalized, "/")
-	return normalized
 }

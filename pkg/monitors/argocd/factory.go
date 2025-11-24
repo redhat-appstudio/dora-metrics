@@ -41,7 +41,7 @@ func (f *Factory) CreateMonitor() (api.Monitor, error) {
 	}
 
 	githubClient := f.createGitHubClient()
-	eventHandler := f.createEventHandler(githubClient)
+	eventHandler := f.createEventHandler(githubClient, client)
 	parser := f.createParser()
 	watcher := f.createWatcher(client, eventHandler, parser)
 
@@ -133,8 +133,8 @@ func (f *Factory) createGitHubClient() github.Client {
 }
 
 // createEventHandler creates an event handler.
-func (f *Factory) createEventHandler(githubClient github.Client) api.EventHandler {
-	return processor.NewEventProcessor(f.config, f.storage, githubClient)
+func (f *Factory) createEventHandler(githubClient github.Client, argocdClient api.Client) api.EventHandler {
+	return processor.NewEventProcessor(f.config, f.storage, githubClient, argocdClient)
 }
 
 // createParser creates an application parser.
@@ -144,5 +144,5 @@ func (f *Factory) createParser() api.ApplicationParser {
 
 // createWatcher creates a watcher instance.
 func (f *Factory) createWatcher(client api.Client, eventHandler api.EventHandler, parser api.ApplicationParser) api.Monitor {
-	return api.NewArgoCDWatcher(client, eventHandler, parser, 50)
+	return api.NewArgoCDWatcher(client, eventHandler, parser, 100) // Increased workers to process events faster
 }

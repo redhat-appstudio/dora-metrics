@@ -207,54 +207,6 @@ func (c *client) GetCommitDate(commitSHA, repoURL string) time.Time {
 	return commitDate
 }
 
-// GetPRInfoForCommit retrieves PR information for a given commit.
-func (c *client) GetPRInfoForCommit(commitSHA, repoURL string) (*storage.PRInfo, error) {
-	ctx := context.Background()
-
-	owner, repo := parseRepoURL(repoURL)
-	if owner == "" || repo == "" {
-		return nil, fmt.Errorf("invalid repository URL: %s", repoURL)
-	}
-
-	// Search for PRs containing this commit
-	query := fmt.Sprintf("repo:%s/%s %s", owner, repo, commitSHA)
-	opts := &github.SearchOptions{
-		Sort:        "created",
-		Order:       "desc",
-		ListOptions: github.ListOptions{PerPage: 10},
-	}
-
-	result, _, err := c.github.Search.Issues(ctx, query, opts)
-	if err != nil {
-		return nil, fmt.Errorf("failed to search for PRs: %w", err)
-	}
-
-	for _, issue := range result.Issues {
-		if issue.PullRequestLinks != nil {
-			pr, _, err := c.github.PullRequests.Get(ctx, owner, repo, *issue.Number)
-			if err != nil {
-				continue
-			}
-
-			if prContainsCommit(pr, commitSHA) {
-				prInfo := &storage.PRInfo{
-					Number:    *pr.Number,
-					Title:     *pr.Title,
-					CreatedAt: pr.CreatedAt.Time,
-				}
-
-				if pr.MergedAt != nil {
-					prInfo.MergedAt = &pr.MergedAt.Time
-				}
-
-				return prInfo, nil
-			}
-		}
-	}
-
-	return nil, fmt.Errorf("no PR found for commit %s", commitSHA)
-}
-
 // parseRepoURL extracts owner and repository name from a GitHub URL.
 func parseRepoURL(url string) (string, string) {
 	// Remove .git suffix if present
@@ -267,12 +219,4 @@ func parseRepoURL(url string) (string, string) {
 	}
 
 	return "", ""
-}
-
-// prContainsCommit checks if a PR contains the given commit.
-func prContainsCommit(pr *github.PullRequest, commitSHA string) bool {
-	if pr.Head == nil || pr.Head.SHA == nil {
-		return false
-	}
-	return *pr.Head.SHA == commitSHA
 }

@@ -28,6 +28,10 @@ type Config struct {
 
 	// KnownClusters lists known cluster names for parsing application names
 	KnownClusters []string `json:"known_clusters"`
+
+	// RepositoryBlacklist lists repository URLs to exclude from commit processing
+	// Commits from these repositories will be filtered out from deployment payloads
+	RepositoryBlacklist []string `json:"repository_blacklist"`
 }
 
 // ApplicationInfo contains parsed information from an ArgoCD application.

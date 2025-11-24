@@ -14,15 +14,6 @@ var (
 	configOnce  sync.Once
 )
 
-// Load creates a new Config instance using only YAML configuration.
-// This is a convenience function that calls LoadWithFlags with nil flags,
-// making it suitable for applications that don't use command-line flags.
-//
-// Returns a Config instance loaded from configs/config.yaml.
-func Load() *Config {
-	return LoadWithFlags(nil)
-}
-
 // LoadCached creates a cached Config instance using only YAML configuration.
 // This function caches the configuration after the first load for better performance.
 //
@@ -81,6 +72,9 @@ func LoadWithFlags(flgs Flags) *Config {
 
 	// ArgoCD known clusters from YAML only - no defaults
 	argocdKnownClusters := yamlConfig.ArgoCD.KnownClusters
+
+	// ArgoCD repository blacklist from YAML only
+	argocdRepositoryBlacklist := yamlConfig.ArgoCD.RepositoryBlacklist
 
 	// Token from environment or YAML only
 	token := getEnv("OFFLINE_TOKEN", yamlConfig.WebRCA.Token)
@@ -142,10 +136,11 @@ func LoadWithFlags(flgs Flags) *Config {
 			Interval: webrcaInterval,
 		},
 		ArgoCD: ArgoCDConfig{
-			Enabled:           argocdEnabled,
-			Namespaces:        argocdNamespaces,
-			ComponentsToIgnore: argocdComponentsToIgnore,
-			KnownClusters:     argocdKnownClusters,
+			Enabled:             argocdEnabled,
+			Namespaces:          argocdNamespaces,
+			ComponentsToIgnore:  argocdComponentsToIgnore,
+			KnownClusters:       argocdKnownClusters,
+			RepositoryBlacklist: argocdRepositoryBlacklist,
 		},
 		Storage: StorageConfig{
 			Redis: RedisYAMLConfig{
@@ -196,8 +191,8 @@ func convertTeamYAMLToConfig(yamlTeams []TeamYAMLConfig) []TeamConfig {
 	teams := make([]TeamConfig, len(yamlTeams))
 	for i, yamlTeam := range yamlTeams {
 		teams[i] = TeamConfig{
-			Name:            yamlTeam.Name,
-			ProjectID:       yamlTeam.ProjectID,
+			Name:             yamlTeam.Name,
+			ProjectID:        yamlTeam.ProjectID,
 			ArgocdComponents: yamlTeam.ArgocdComponents,
 		}
 	}

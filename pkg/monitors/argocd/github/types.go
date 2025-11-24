@@ -27,9 +27,6 @@ type Client interface {
 
 	// GetCommitDate retrieves the commit creation date for a given commit
 	GetCommitDate(commitSHA, repoURL string) time.Time
-
-	// GetPRInfoForCommit retrieves PR information for a given commit
-	GetPRInfoForCommit(commitSHA, repoURL string) (*storage.PRInfo, error)
 }
 
 // Config holds GitHub client configuration.

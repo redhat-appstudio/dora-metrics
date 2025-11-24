@@ -11,6 +11,7 @@ This directory contains comprehensive documentation for the DORA Metrics system 
 | [**Architecture**](architecture.md) | Complete system architecture and design | Components, data flow, DORA metrics, configuration |
 | [**Data Flow**](data-flow.md) | Detailed data flow diagrams and processes | Event processing, commit handling, DevLake integration |
 | [**Deployment Guide**](deployment-guide.md) | Step-by-step deployment instructions | Kubernetes manifests, configuration, monitoring |
+| [**Configuration SOP**](configuration-sop.md) | Comprehensive configuration guide | All configuration options, team setup, troubleshooting |
 
 ## 🏗️ System Architecture
 
@@ -115,23 +116,26 @@ The system tracks all four DORA metrics:
 
 ## 🔧 Configuration
 
-### Key Configuration Options
+For comprehensive configuration guidance, see the [**Configuration SOP**](configuration-sop.md).
+
+### Quick Configuration Overview
 
 ```yaml
 argocd:
   enabled: true
   namespaces: ["argocd", "openshift-gitops"]
   componentsToIgnore: []
-  # List components to exclude from monitoring (all others will be monitored)
-  # Example: ["test-component", "deprecated-service"]
   knownClusters: ["production", "staging"]
 
 integration:
   devlake:
     enabled: true
     baseURL: "https://devlake.example.com"
-    projectID: "12345"
-    timeoutSeconds: 30
+    projectID: "1"  # Global project
+    teams:           # Team-specific routing
+      - name: "team-name"
+        project_id: "X"
+        argocd_components: ["component-1"]
 
 storage:
   redis:
@@ -140,6 +144,8 @@ storage:
     password: ""
     db: 0
 ```
+
+**For detailed configuration instructions, team setup, and troubleshooting, refer to the [Configuration SOP](configuration-sop.md).**
 
 ## 📈 Monitoring
 
@@ -215,7 +221,8 @@ docs/
 ├── README.md                 # This overview document
 ├── architecture.md          # Complete system architecture
 ├── data-flow.md            # Detailed data flow diagrams
-└── deployment-guide.md     # Deployment and configuration guide
+├── deployment-guide.md     # Deployment and configuration guide
+└── configuration-sop.md   # Comprehensive configuration SOP
 ```
 
 ## 🤝 Contributing
