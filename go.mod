@@ -10,7 +10,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.0
 	github.com/google/go-github/v53 v53.2.0
 	github.com/joho/godotenv v1.5.1
-	github.com/redis/go-redis/v9 v9.13.0
+	github.com/redis/go-redis/v9 v9.17.1
 	github.com/stretchr/testify v1.10.0
 	github.com/toon-format/toon-go v0.0.0-20251108125615-44b4cd22477f
 	go.uber.org/zap v1.27.1
