@@ -4,7 +4,7 @@ package processor
 import (
 	"time"
 
-	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
+	"github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
 )
 
 // AppValidator validates ArgoCD application state before processing.
