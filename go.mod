@@ -124,6 +124,7 @@ require (
 	github.com/xlab/treeprint v1.2.0 // indirect
 	go.starlark.net v0.0.0-20250906160240-bf296ed553ea // indirect
 	go.uber.org/multierr v1.11.0 // indirect
+	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/net v0.39.0 // indirect
 	golang.org/x/sync v0.13.0 // indirect
@@ -154,5 +155,5 @@ require (
 	sigs.k8s.io/kustomize/api v0.13.5-0.20230601165947-6ce0bf390ce3 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.14.3-0.20230601165947-6ce0bf390ce3 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
-	sigs.k8s.io/yaml v1.4.0 // indirect
+	sigs.k8s.io/yaml v1.6.0 // indirect
 )
