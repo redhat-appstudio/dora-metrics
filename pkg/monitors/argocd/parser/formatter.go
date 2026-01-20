@@ -28,7 +28,9 @@ type Formatter struct {
 
 // NewFormatter creates a new DevLake formatter instance.
 func NewFormatter(githubClient github.Client, storage *storage.RedisClient) *Formatter {
-	devlake := integrations.NewDevLakeIntegration("", "", false, 30)
+	// Create a minimal DevLake integration instance for formatting only
+	// This is not used for sending, only for date formatting
+	devlake := integrations.NewDevLakeIntegration("", "", false, 30, nil)
 	return &Formatter{
 		githubClient: githubClient,
 		storage:      storage,
@@ -62,15 +64,28 @@ func (f *Formatter) FormatDeployment(
 		componentName = app.Name
 	}
 
-	displayTitle := fmt.Sprintf("Production Deployment component: %s, revision %s (%s)",
-		componentName, deploymentID, deployedAt.Format("2006-01-02 15:04:05 MST"))
+	// Create a meaningful DisplayTitle for AI agents with structured information
+	// Format: "ArgoCD Deployment | Component: {component} | Namespace: {namespace} | Revision: {revision} | Status: {result} | Deployed: {timestamp}"
+	namespace := appInfo.Namespace
+	if namespace == "" {
+		namespace = app.Namespace
+	}
+	displayTitle := fmt.Sprintf("ArgoCD Deployment | Component: %s | Namespace: %s | Revision: %s | Status: %s | Deployed: %s",
+		componentName,
+		namespace,
+		deploymentID,
+		result,
+		deployedAt.Format("2006-01-02 15:04:05 MST"))
 	name := fmt.Sprintf("deploy to production %s", deploymentID)
 
 	// Calculate proper timeline
 	startedDate, finishedDate := f.calculateTimeline(devlakeCommits, deployedAt)
 
 	// Format dates using DevLake format
-	createdDateStr := f.devlake.FormatDevLakeDate(deployedAt)
+	// CreatedDate should be the same as StartedDate (when the commit was created)
+	// StartedDate is when the commit was created (earliest commit in the deployment)
+	// FinishedDate is when it was deployed in production (from history)
+	createdDateStr := f.devlake.FormatDevLakeDate(startedDate)
 	startedDateStr := f.devlake.FormatDevLakeDate(startedDate)
 	finishedDateStr := f.devlake.FormatDevLakeDate(finishedDate)
 
@@ -96,16 +111,9 @@ func (f *Formatter) createDevLakeCommits(
 	devlakeCommits := make([]integrations.DevLakeDeploymentCommit, 0) // Initialize as empty slice, not nil
 
 	// Add all commits (including infra-deployments commit which is already in the commits slice)
+	// Note: We include all commits in the deployment, even if they were sent before.
+	// This allows the same commit to be part of multiple deployments (e.g., rollback and redeploy).
 	for _, commit := range commits {
-		// Check if this commit has already been sent to DevLake for this component
-		if f.storage != nil {
-			alreadySent, err := f.storage.IsDevLakeCommitProcessed(context.Background(), commit.SHA, component)
-			if err != nil {
-				logger.Warnf("Failed to check if commit %s was already sent to DevLake for component %s: %v", commit.SHA, component, err)
-			} else if alreadySent {
-				continue
-			}
-		}
 
 		displayTitle := commit.Message
 		name := commit.Message
@@ -201,20 +209,34 @@ func (f *Formatter) getRepoURLFromHistory(app *v1alpha1.Application, commitSHA s
 
 // getCommitMessageFromGitHub retrieves commit message from GitHub.
 func (f *Formatter) getCommitMessageFromGitHub(commitSHA string) string {
+	// Validate commit SHA is not empty
+	if commitSHA == "" {
+		return "Commit (unknown)"
+	}
+
 	if f.githubClient == nil {
-		return fmt.Sprintf("Commit %s", commitSHA[:8])
+		if len(commitSHA) >= 8 {
+			return fmt.Sprintf("Commit %s", commitSHA[:8])
+		}
+		return fmt.Sprintf("Commit %s", commitSHA)
 	}
 
 	// Try to find the repository for this commit
 	repoURL, err := f.githubClient.FindRepositoryForCommit(commitSHA)
 	if err != nil {
-		return fmt.Sprintf("Commit %s", commitSHA[:8])
+		if len(commitSHA) >= 8 {
+			return fmt.Sprintf("Commit %s", commitSHA[:8])
+		}
+		return fmt.Sprintf("Commit %s", commitSHA)
 	}
 
 	// Get the commit message
 	commitMsg := f.githubClient.GetCommitMessage(commitSHA, repoURL)
 	if commitMsg == "" {
-		return fmt.Sprintf("Commit %s", commitSHA[:8])
+		if len(commitSHA) >= 8 {
+			return fmt.Sprintf("Commit %s", commitSHA[:8])
+		}
+		return fmt.Sprintf("Commit %s", commitSHA)
 	}
 
 	return commitMsg

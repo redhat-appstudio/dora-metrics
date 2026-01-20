@@ -45,14 +45,25 @@ func main() {
 
 	if cfg.ArgoCD.Enabled {
 		logger.Infof("ArgoCD monitoring: enabled (namespaces: %v)", cfg.ArgoCD.Namespaces)
-		if len(cfg.ArgoCD.ComponentsToMonitor) > 0 {
-			logger.Infof("ArgoCD components to monitor: %v", cfg.ArgoCD.ComponentsToMonitor)
+		if len(cfg.ArgoCD.ComponentsToIgnore) > 0 {
+			logger.Infof("ArgoCD components to ignore: %v", cfg.ArgoCD.ComponentsToIgnore)
+		} else {
+			logger.Infof("ArgoCD monitoring: all components will be monitored")
 		}
 		if len(cfg.ArgoCD.KnownClusters) > 0 {
 			logger.Infof("ArgoCD known clusters: %v", cfg.ArgoCD.KnownClusters)
 		}
 	} else {
 		logger.Infof("ArgoCD monitoring: disabled")
+	}
+
+	if cfg.Integration.DevLake.Enabled {
+		logger.Infof("DevLake integration: enabled (global project ID: %s)", cfg.Integration.DevLake.ProjectID)
+		if len(cfg.Integration.DevLake.Teams) > 0 {
+			logger.Infof("DevLake teams: %d team(s) configured for component routing", len(cfg.Integration.DevLake.Teams))
+		}
+	} else {
+		logger.Infof("DevLake integration: disabled")
 	}
 
 	if err := srv.Start(); err != nil {

@@ -1,0 +1,24 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: dora-metrics
+  namespace: konflux-dora-metrics
+  labels:
+    app: dora-metrics
+    app.kubernetes.io/name: dora-metrics
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: route
+    app.kubernetes.io/part-of: dora-metrics
+  annotations:
+    haproxy.router.openshift.io/timeout: "300s"
+spec:
+  port:
+    targetPort: http
+  to:
+    kind: Service
+    name: dora-metrics
+    weight: 100
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

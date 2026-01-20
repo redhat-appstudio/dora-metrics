@@ -1,0 +1,175 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dora-metrics-config
+  namespace: konflux-dora-metrics
+  labels:
+    app: dora-metrics
+    app.kubernetes.io/name: dora-metrics
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: dora-metrics
+data:
+  config.yaml: |
+    server:
+      port: "8080"
+      environment: "staging"
+      log_level: "info"
+
+    webrca:
+      enabled: true
+      api_url: "https://api.openshift.com/api/web-rca/v1/incidents"
+      interval: "1h"
+      # Offline token should be set via environment variable OFFLINE_TOKEN for security
+      # or you can set it here directly (not recommended for production)
+      # token: "your_offline_token_here"
+
+    argocd:
+      enabled: true
+      namespaces:
+        - konflux-public-production
+        - argocd
+
+      # List of components to ignore (all other components will be monitored)
+      # These components will be excluded from monitoring across all known clusters
+      # Format: component-name (e.g., "test-component", "deprecated-service")
+      # Leave empty to monitor all components
+      components_to_ignore:
+        - "monitoring"
+        - "openshift-gitops"
+        - "perf-team-prometheus-reader"
+        - "pulp-access-controller"
+        - "monitoring-workload-prometheus"
+        - "kubearchive"
+        - "tracing-workload-tracing"
+        - "cluster-secret-store"
+        - "build-templates"
+        - "policies"
+
+      # Known cluster names for application name parsing
+      # These are used to extract component and cluster information from application names
+      known_clusters:
+        - kflux-ocp-p01
+        - kflux-osp-p01
+        - kflux-prd-es01
+        - kflux-prd-rh02
+        - kflux-prd-rh03
+        - kflux-rhel-p01
+        - stone-prd-host1
+        - stone-prd-rh01
+        - stone-prod-p01
+        - stone-prod-p02
+
+      # Repository blacklist - repository URLs to exclude from commit processing
+      # Commits from these repositories will be filtered out from deployment payloads
+      # Format: full repository URL (e.g., "https://github.com/user/repo" or "https://github.com/user/repo.git")
+      repository_blacklist:
+        - "https://github.com/DindaPutriFN/imao1"
+
+    storage:
+      redis:
+        enabled: true
+        address: "localhost:6379"  # Will be overridden by REDIS_HOST:REDIS_PORT env vars
+        password: ""  # Will be overridden by REDIS_PASSWORD env var
+        database: 0
+        key_prefix: "dora-metrics"
+
+    integration:
+      # DevLake Integration Configuration
+      # DevLake is a data engineering platform that collects, transforms, and visualizes software development data.
+      # This integration sends deployment events from ArgoCD applications to DevLake projects for DORA metrics tracking.
+      #
+      # How it works:
+      # 1. When an ArgoCD application is deployed, the system extracts component name, revision, and commit history
+      # 2. A deployment event is formatted according to DevLake's CICD deployment API format
+      # 3. The deployment is sent to the global project (always) and any matching team projects
+      # 4. DevLake processes these events to calculate DORA metrics (deployment frequency, lead time, etc.)
+      #
+      # Authentication: Requires DEVLAKE_WEBHOOK_TOKEN environment variable to be set
+      devlake:
+        enabled: true  # Set to false to disable DevLake integration
+        base_url: "https://konflux-devlake-ui-konflux-devlake.apps.rosa.kflux-c-prd-i01.7hyu.p3.openshiftapps.com"  # DevLake instance URL
+        project_id: "1"  # Global DevLake project ID - receives ALL deployment events from all components
+        timeout_seconds: 30  # HTTP request timeout for DevLake API calls
+
+        # Team Project Configuration
+        # Teams allow routing deployments to team-specific DevLake projects in addition to the global project.
+        # This enables teams to have their own DORA metrics dashboards while maintaining a global view.
+        #
+        # Deployment Routing Logic:
+        # - Every deployment is ALWAYS sent to the global project (project_id above)
+        # - If a component belongs to a team, the deployment is ALSO sent to that team's project
+        # - A component can belong to multiple teams (deployment sent to all matching team projects)
+        # - If a component doesn't match any team, it only goes to the global project
+        #
+        # Example: If "build-service" component is deployed:
+        # - Sent to global project (project_id: "1")
+        # - Sent to team-platform project (project_id: "2") if build-service is in team-platform's argocd_components
+        teams:
+          - name: "konflux-ui"
+            project_id: "3"
+            argocd_components:
+              - "konflux-ui"
+              - "konflux-info"
+              - "konflux-kite"
+
+          - name: "konflux-build-team"
+            project_id: "6"
+            argocd_components:
+              - "build-service"
+              - "image-controller"
+              - "build-templates"
+              - "tekton-ci"
+
+          - name: "konflux-release-team"
+            project_id: "7"
+            argocd_components:
+              - "release"
+              - "internal-services"
+
+          - name: "konflux-integration-team"
+            project_id: "2"
+            argocd_components:
+              - "application-api"
+              - "integration"
+
+          - name: "konflux-vanguard-team"
+            project_id: "3"
+            argocd_components:
+              - "cluster-as-a-service"
+              - "cluster-secret-store"
+              - "crossplane-config"
+              - "crossplane-control-plane"
+              - "konflux-ci"
+              - "notification-controller"
+              - "project-controller"
+              - "smee-client"
+              - "squid"
+              - "trust-manager"
+
+          - name: "konflux-infrastructure-team"
+            project_id: "5"
+            argocd_components:
+              - "authentication"
+              - "backup"
+              - "cert-manager"
+              - "cost-management"
+              - "etcd-shield"
+              - "external-secrets-operator"
+              - "konflux-rbac"
+              - "kueue"
+              - "kyverno"
+              - "multi-platform-controller"
+              - "namespace-lister"
+              - "repository-validator"
+
+          - name: "konflux-mintmaker-team"
+            project_id: "4"
+            argocd_components:
+              - "mintmaker"
+
+          - name: "konflux-pipelines-team"
+            project_id: "8"
+            argocd_components:
+              - "pipeline-service"
+              - "vector-tekton-logs-collector"

@@ -43,7 +43,7 @@ func NewArgoCDWatcher(
 		eventHandler: eventHandler,
 		parser:       parser,
 		workers:      workers,
-		eventCh:      make(chan watch.Event, 10000),
+		eventCh:      make(chan watch.Event, 100000), // Increased buffer to handle high event volume
 		stopCh:       make(chan struct{}),
 	}
 }

@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"sync"
+
+	"github.com/redhat-appstudio/dora-metrics/internal/config"
+	"github.com/redhat-appstudio/dora-metrics/pkg/logger"
 )
 
 // Manager handles all integrations in the system
@@ -97,7 +100,19 @@ func (m *Manager) SendDeploymentEventToDevLake(ctx context.Context, deployment D
 }
 
 // RegisterDevLakeIntegration registers a DevLake integration
-func (m *Manager) RegisterDevLakeIntegration(baseURL string, projectID string, enabled bool) {
-	devlakeIntegration := NewDevLakeIntegration(baseURL, projectID, enabled, 30) // 30 second timeout
+func (m *Manager) RegisterDevLakeIntegration(baseURL string, projectID string, enabled bool, timeoutSeconds int, teams []config.TeamConfig) {
+	if timeoutSeconds <= 0 {
+		timeoutSeconds = 30 // Default timeout
+	}
+	devlakeIntegration := NewDevLakeIntegration(baseURL, projectID, enabled, timeoutSeconds, teams)
 	m.RegisterIntegration("devlake", devlakeIntegration)
+	
+	// Log team configuration summary
+	if enabled && len(teams) > 0 {
+		totalComponents := 0
+		for _, team := range teams {
+			totalComponents += len(team.ArgocdComponents)
+		}
+		logger.Infof("DevLake integration registered with %d team(s) managing %d total component(s)", len(teams), totalComponents)
+	}
 }
