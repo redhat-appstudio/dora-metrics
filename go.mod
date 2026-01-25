@@ -154,7 +154,7 @@ require (
 	k8s.io/cli-runtime v0.29.6 // indirect
 	k8s.io/component-base v0.29.6 // indirect
 	k8s.io/component-helpers v0.29.6 // indirect
-	k8s.io/klog/v2 v2.110.1 // indirect
+	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-aggregator v0.29.6 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
 	k8s.io/kubectl v0.29.6 // indirect
