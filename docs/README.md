@@ -11,7 +11,6 @@ This directory contains comprehensive documentation for the DORA Metrics system 
 | [**Architecture**](architecture.md) | Complete system architecture and design | Components, data flow, DORA metrics, configuration |
 | [**Data Flow**](data-flow.md) | Detailed data flow diagrams and processes | Event processing, commit handling, DevLake integration |
 | [**Deployment Guide**](deployment-guide.md) | Step-by-step deployment instructions | Kubernetes manifests, configuration, monitoring |
-| [**Configuration SOP**](configuration-sop.md) | Comprehensive configuration guide | All configuration options, team setup, troubleshooting |
 
 ## 🏗️ System Architecture
 
