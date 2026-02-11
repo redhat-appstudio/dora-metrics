@@ -11,7 +11,7 @@ import (
 	"github.com/redhat-appstudio/dora-metrics/pkg/logger"
 	"github.com/redhat-appstudio/dora-metrics/pkg/storage"
 
-	"github.com/google/go-github/v53/github"
+	"github.com/google/go-github/v82/github"
 	"golang.org/x/oauth2"
 )
 
