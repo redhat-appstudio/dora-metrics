@@ -37,7 +37,7 @@ require (
 	github.com/bombsimon/logrusr/v2 v2.0.1 // indirect
 	github.com/bradleyfalzon/ghinstallation/v2 v2.17.0 // indirect
 	github.com/casbin/casbin/v2 v2.135.0 // indirect
-	github.com/casbin/govaluate v1.3.0 // indirect
+	github.com/casbin/govaluate v1.10.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
 	github.com/clipperhouse/stringish v0.1.1 // indirect
