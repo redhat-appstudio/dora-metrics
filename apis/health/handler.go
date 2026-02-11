@@ -5,7 +5,7 @@ import (
 
 	"github.com/redhat-appstudio/dora-metrics/internal/version"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 var startTime = time.Now()
