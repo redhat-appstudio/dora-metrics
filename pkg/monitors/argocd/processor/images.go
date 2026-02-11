@@ -9,7 +9,7 @@ import (
 	"github.com/redhat-appstudio/dora-metrics/pkg/monitors/argocd/github"
 	"github.com/redhat-appstudio/dora-metrics/pkg/storage"
 
-	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
+	"github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
 )
 
 // ImageProcessor handles image-related operations for ArgoCD deployments.

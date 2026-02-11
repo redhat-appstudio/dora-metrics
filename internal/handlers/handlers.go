@@ -5,7 +5,7 @@ import (
 	"github.com/redhat-appstudio/dora-metrics/apis/health"
 	"github.com/redhat-appstudio/dora-metrics/internal/version"
 
-	argocdclient "github.com/argoproj/argo-cd/v2/pkg/client/clientset/versioned"
+	argocdclient "github.com/argoproj/argo-cd/v3/pkg/client/clientset/versioned"
 	"github.com/gofiber/fiber/v2"
 )
 

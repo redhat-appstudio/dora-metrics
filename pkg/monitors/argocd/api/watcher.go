@@ -9,8 +9,8 @@ import (
 
 	"github.com/redhat-appstudio/dora-metrics/pkg/logger"
 
-	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
-	argocd "github.com/argoproj/argo-cd/v2/pkg/client/clientset/versioned"
+	"github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
+	argocd "github.com/argoproj/argo-cd/v3/pkg/client/clientset/versioned"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"

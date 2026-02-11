@@ -9,7 +9,7 @@ import (
 
 	"github.com/redhat-appstudio/dora-metrics/pkg/monitors/argocd/api"
 
-	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
+	"github.com/argoproj/argo-cd/v3/pkg/apis/application/v1alpha1"
 )
 
 // ApplicationParser implements the ApplicationParser interface.
