@@ -99,7 +99,7 @@ spec:
           mountPath: /app/configs
           readOnly: true
       - name: redis
-        image: redis:7.0-alpine
+        image: redis:8-alpine
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 6379
