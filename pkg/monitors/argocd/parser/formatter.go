@@ -6,6 +6,7 @@ package parser
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/redhat-appstudio/dora-metrics/pkg/integrations"
@@ -46,11 +47,13 @@ func (f *Formatter) FormatDeployment(
 	deployedAt time.Time,
 	commits []storage.CommitInfo,
 ) (integrations.DevLakeCICDDeployment, bool) {
-	deploymentID := appInfo.Revision
-	repoURL := f.getRepoURLFromHistory(app, deploymentID)
-	infraCommitMsg := f.getCommitMessageFromGitHub(deploymentID)
+	// Create unique deployment ID by combining revision and cluster
+	// This ensures each cluster deployment is tracked separately
+	deploymentID := fmt.Sprintf("%s:%s", appInfo.Revision, appInfo.Cluster)
+	repoURL := f.getRepoURLFromHistory(app, appInfo.Revision)
+	infraCommitMsg := f.getCommitMessageFromGitHub(appInfo.Revision)
 
-	devlakeCommits := f.createDevLakeCommits(commits, deployedAt, repoURL, deploymentID, infraCommitMsg, appInfo.Component)
+	devlakeCommits := f.createDevLakeCommits(commits, deployedAt, repoURL, appInfo.Revision, infraCommitMsg, appInfo.Component)
 
 	// If no commits to include, return empty deployment and false
 	if len(devlakeCommits) == 0 {
@@ -64,19 +67,26 @@ func (f *Formatter) FormatDeployment(
 		componentName = app.Name
 	}
 
+	// Use the environment from appInfo (extracted from source path)
+	environment := appInfo.Environment
+	if environment == "" {
+		environment = "PRODUCTION" // Fallback
+	}
+
 	// Create a meaningful DisplayTitle for AI agents with structured information
-	// Format: "ArgoCD Deployment | Component: {component} | Namespace: {namespace} | Revision: {revision} | Status: {result} | Deployed: {timestamp}"
+	// Format: "ArgoCD Deployment | Component: {component} | Cluster: {cluster} | Environment: {env} | Revision: {revision} | Status: {result} | Deployed: {timestamp}"
 	namespace := appInfo.Namespace
 	if namespace == "" {
 		namespace = app.Namespace
 	}
-	displayTitle := fmt.Sprintf("ArgoCD Deployment | Component: %s | Namespace: %s | Revision: %s | Status: %s | Deployed: %s",
+	displayTitle := fmt.Sprintf("ArgoCD Deployment | Component: %s | Cluster: %s | Environment: %s | Revision: %s | Status: %s | Deployed: %s",
 		componentName,
-		namespace,
-		deploymentID,
+		appInfo.Cluster,
+		environment,
+		appInfo.Revision,
 		result,
 		deployedAt.Format("2006-01-02 15:04:05 MST"))
-	name := fmt.Sprintf("deploy to production %s", deploymentID)
+	name := fmt.Sprintf("deploy to %s %s", strings.ToLower(environment), appInfo.Revision)
 
 	// Calculate proper timeline
 	startedDate, finishedDate := f.calculateTimeline(devlakeCommits, deployedAt)
@@ -94,7 +104,7 @@ func (f *Formatter) FormatDeployment(
 		CreatedDate:       &createdDateStr,
 		StartedDate:       startedDateStr,
 		FinishedDate:      finishedDateStr,
-		Environment:       "PRODUCTION",
+		Environment:       environment,
 		Result:            result,
 		DisplayTitle:      &displayTitle,
 		Name:              &name,
