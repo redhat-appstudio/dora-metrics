@@ -7,7 +7,7 @@ This directory contains the OpenShift manifests for deploying the DORA Metrics a
 - OpenShift cluster with appropriate permissions
 - `oc` CLI tool installed and configured
 - Access to the `quay.io/redhat-appstudio/dora-metrics` container image
-- Access to the `redis:7.0-alpine` container image (used as sidecar)
+- Access to the `redis:8-alpine` container image (used as sidecar)
 
 ## Deployment
 

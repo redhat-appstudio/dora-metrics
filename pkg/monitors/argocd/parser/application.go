@@ -39,8 +39,11 @@ func (p *ApplicationParser) ParseApplication(app *v1alpha1.Application) (*api.Ap
 		Images:     p.extractImagesFromStatus(&app.Status),
 	}
 
-	// Parse environment, component, and cluster from application name
-	appInfo.Environment, appInfo.Component, appInfo.Cluster = p.parseApplicationName(app.Name)
+	// Parse component and cluster from application name
+	_, appInfo.Component, appInfo.Cluster = p.parseApplicationName(app.Name)
+
+	// Extract environment from source path (e.g., "components/build-service/production/" -> "production")
+	appInfo.Environment = p.extractEnvironmentFromSourcePath(app)
 
 	return appInfo, nil
 }
@@ -90,6 +93,7 @@ func (p *ApplicationParser) extractImagesFromStatus(status *v1alpha1.Application
 }
 
 // parseApplicationName parses application name to extract environment, component, and cluster.
+// Environment is now extracted from source path, not application name.
 func (p *ApplicationParser) parseApplicationName(name string) (string, string, string) {
 	// Find cluster suffix
 	var cluster string
@@ -108,10 +112,60 @@ func (p *ApplicationParser) parseApplicationName(name string) (string, string, s
 	nameWithoutCluster := strings.TrimSuffix(name, "-"+cluster)
 	component := nameWithoutCluster
 
-	// For now, set environment to "production" since we don't have environment info in the name
-	environment := "production"
+	// Environment is extracted separately from source path
+	return "", component, cluster
+}
 
-	return environment, component, cluster
+// extractEnvironmentFromSourcePath extracts the environment from the ArgoCD source path.
+// Expected path format: "components/<component>/<environment>/" or similar patterns.
+// Returns uppercase environment for DevLake compatibility (PRODUCTION, STAGING, DEVELOPMENT).
+func (p *ApplicationParser) extractEnvironmentFromSourcePath(app *v1alpha1.Application) string {
+	var sourcePath string
+	if app.Spec.Source != nil {
+		sourcePath = app.Spec.Source.Path
+	} else if len(app.Spec.Sources) > 0 {
+		sourcePath = app.Spec.Sources[0].Path
+	}
+	if sourcePath == "" {
+		return "PRODUCTION"
+	}
+
+	// Normalize path separators and convert to lowercase for matching
+	path := strings.ToLower(sourcePath)
+
+	// Check for known environment patterns in the path
+	// Patterns: /production/, /staging/, /development/, /dev/, /stage/, /prod/
+	environmentMappings := map[string]string{
+		"/production/":  "PRODUCTION",
+		"/prod/":        "PRODUCTION",
+		"/staging/":     "STAGING",
+		"/stage/":       "STAGING",
+		"/development/": "DEVELOPMENT",
+		"/dev/":         "DEVELOPMENT",
+	}
+
+	for pattern, env := range environmentMappings {
+		if strings.Contains(path, pattern) {
+			return env
+		}
+	}
+
+	// Also check for environment at the end of path (without trailing slash)
+	pathParts := strings.Split(strings.Trim(sourcePath, "/"), "/")
+	if len(pathParts) > 0 {
+		lastPart := strings.ToLower(pathParts[len(pathParts)-1])
+		switch lastPart {
+		case "production", "prod":
+			return "PRODUCTION"
+		case "staging", "stage":
+			return "STAGING"
+		case "development", "dev":
+			return "DEVELOPMENT"
+		}
+	}
+
+	// Default to PRODUCTION if no environment pattern found
+	return "PRODUCTION"
 }
 
 // isNamespaceMonitored checks if a namespace should be monitored.
