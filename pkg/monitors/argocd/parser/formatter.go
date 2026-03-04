@@ -47,18 +47,8 @@ func (f *Formatter) FormatDeployment(
 	deployedAt time.Time,
 	commits []storage.CommitInfo,
 ) (integrations.DevLakeCICDDeployment, bool) {
-	// Create unique deployment ID by combining revision and cluster
-	// This ensures each cluster deployment is tracked separately
-	deploymentID := fmt.Sprintf("%s:%s", appInfo.Revision, appInfo.Cluster)
+	deploymentID := appInfo.Revision
 	repoURL := f.getRepoURLFromHistory(app, appInfo.Revision)
-	infraCommitMsg := f.getCommitMessageFromGitHub(appInfo.Revision)
-
-	devlakeCommits := f.createDevLakeCommits(commits, deployedAt, repoURL, appInfo.Revision, infraCommitMsg, appInfo.Component)
-
-	// If no commits to include, return empty deployment and false
-	if len(devlakeCommits) == 0 {
-		return integrations.DevLakeCICDDeployment{}, false
-	}
 
 	result := f.determineResult(app)
 
@@ -67,18 +57,12 @@ func (f *Formatter) FormatDeployment(
 		componentName = app.Name
 	}
 
-	// Use the environment from appInfo (extracted from source path)
 	environment := appInfo.Environment
 	if environment == "" {
-		environment = "PRODUCTION" // Fallback
+		environment = "PRODUCTION"
 	}
 
-	// Create a meaningful DisplayTitle for AI agents with structured information
-	// Format: "ArgoCD Deployment | Component: {component} | Cluster: {cluster} | Environment: {env} | Revision: {revision} | Status: {result} | Deployed: {timestamp}"
-	namespace := appInfo.Namespace
-	if namespace == "" {
-		namespace = app.Namespace
-	}
+	// Build the structured display title used consistently across the deployment and all its commits
 	displayTitle := fmt.Sprintf("ArgoCD Deployment | Component: %s | Cluster: %s | Environment: %s | Revision: %s | Status: %s | Deployed: %s",
 		componentName,
 		appInfo.Cluster,
@@ -86,15 +70,16 @@ func (f *Formatter) FormatDeployment(
 		appInfo.Revision,
 		result,
 		deployedAt.Format("2006-01-02 15:04:05 MST"))
-	name := fmt.Sprintf("deploy to %s %s", strings.ToLower(environment), appInfo.Revision)
+	name := fmt.Sprintf("deploy %s to %s (%s)", componentName, appInfo.Cluster, strings.ToLower(environment))
 
-	// Calculate proper timeline
+	devlakeCommits := f.createDevLakeCommits(commits, deployedAt, repoURL, appInfo.Component, displayTitle, name)
+
+	if len(devlakeCommits) == 0 {
+		return integrations.DevLakeCICDDeployment{}, false
+	}
+
 	startedDate, finishedDate := f.calculateTimeline(devlakeCommits, deployedAt)
 
-	// Format dates using DevLake format
-	// CreatedDate should be the same as StartedDate (when the commit was created)
-	// StartedDate is when the commit was created (earliest commit in the deployment)
-	// FinishedDate is when it was deployed in production (from history)
 	createdDateStr := f.devlake.FormatDevLakeDate(startedDate)
 	startedDateStr := f.devlake.FormatDevLakeDate(startedDate)
 	finishedDateStr := f.devlake.FormatDevLakeDate(finishedDate)
@@ -113,41 +98,32 @@ func (f *Formatter) FormatDeployment(
 }
 
 // createDevLakeCommits creates DevLake commit entries from commit history.
+// displayTitle and name are the structured deployment-level values, applied consistently to every commit.
 func (f *Formatter) createDevLakeCommits(
 	commits []storage.CommitInfo,
 	deployedAt time.Time,
-	repoURL, deploymentID, infraCommitMsg, component string,
+	repoURL, component, displayTitle, name string,
 ) []integrations.DevLakeDeploymentCommit {
-	devlakeCommits := make([]integrations.DevLakeDeploymentCommit, 0) // Initialize as empty slice, not nil
+	devlakeCommits := make([]integrations.DevLakeDeploymentCommit, 0)
 
-	// Add all commits (including infra-deployments commit which is already in the commits slice)
-	// Note: We include all commits in the deployment, even if they were sent before.
-	// This allows the same commit to be part of multiple deployments (e.g., rollback and redeploy).
 	for _, commit := range commits {
-
-		displayTitle := commit.Message
-		name := commit.Message
-
-		// Use the commit's repository URL if available, otherwise fall back to main repo URL
 		commitRepoURL := commit.RepoURL
 		if commitRepoURL == "" {
 			commitRepoURL = repoURL
 		}
 
-		// Use commit creation date as StartedDate, deployment time as FinishedDate
-		// This is REQUIRED for DevLake compliance - we must have the real commit date
 		startedDate := commit.CreatedAt
 		if startedDate.IsZero() {
 			logger.Errorf("CRITICAL: Commit %s has zero CreatedAt - this violates DevLake requirements", commit.SHA)
-			// Don't use fallback - we need the real commit date
-			continue // Skip this commit if we don't have its creation date
+			continue
 		}
 		logger.Infof("Using commit creation date for %s: StartedDate=%v, FinishedDate=%v", commit.SHA, startedDate, deployedAt)
 
-		// Format dates using DevLake format
 		startedDateStr := f.devlake.FormatDevLakeDate(startedDate)
 		finishedDateStr := f.devlake.FormatDevLakeDate(deployedAt)
 
+		dt := displayTitle
+		n := name
 		devlakeCommits = append(devlakeCommits, integrations.DevLakeDeploymentCommit{
 			RepoURL:      commitRepoURL,
 			RefName:      commit.SHA,
@@ -156,11 +132,10 @@ func (f *Formatter) createDevLakeCommits(
 			CommitSHA:    commit.SHA,
 			CommitMsg:    commit.Message,
 			Result:       "SUCCESS",
-			DisplayTitle: &displayTitle,
-			Name:         &name,
+			DisplayTitle: &dt,
+			Name:         &n,
 		})
 
-		// Mark this commit as sent to DevLake for this component
 		if f.storage != nil {
 			if err := f.storage.MarkDevLakeCommitAsProcessed(context.Background(), commit.SHA, component); err != nil {
 				logger.Errorf("Failed to mark commit %s as sent to DevLake for component %s: %v", commit.SHA, component, err)

@@ -68,6 +68,12 @@ func (ep *EventProcessor) HandleEvent(ctx context.Context, event watch.Event, ap
 		return nil
 	}
 
+	// Only process production deployments
+	if appInfo.Environment != "PRODUCTION" {
+		logger.Debugf("Skipping non-production deployment for %s (environment: %s)", app.Name, appInfo.Environment)
+		return nil
+	}
+
 	// Process the event based on type
 	switch event.Type {
 	case watch.Modified:
@@ -262,9 +268,24 @@ func (ep *EventProcessor) processNewDeployment(ctx context.Context, app *v1alpha
 		return nil
 	}
 
+	// Check if this revision was already sent to DevLake (by another cluster)
+	alreadySent, err := ep.storage.IsRevisionSentToDevLake(ctx, appInfo.Revision, appInfo.Component)
+	if err != nil {
+		logger.Warnf("Failed to check if revision %s already sent to DevLake: %v, proceeding", appInfo.Revision, err)
+	}
+	if alreadySent {
+		logger.Infof("Revision %s already sent to DevLake for component %s (by another cluster), skipping", appInfo.Revision, appInfo.Component)
+		ep.storeDeploymentRecord(ctx, app, appInfo, commitHistory)
+		return nil
+	}
+
 	ep.logDevLakePayload(deployment)
 	if err := ep.sendDeploymentToDevLake(ctx, deployment); err != nil {
 		logger.Errorf("Failed to send deployment to DevLake: %v", err)
+	} else {
+		if err := ep.storage.MarkRevisionSentToDevLake(ctx, appInfo.Revision, appInfo.Component); err != nil {
+			logger.Warnf("Failed to mark revision %s as sent to DevLake: %v", appInfo.Revision, err)
+		}
 	}
 
 	ep.storeDeploymentRecord(ctx, app, appInfo, commitHistory)

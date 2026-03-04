@@ -4,7 +4,7 @@ server:
   log_level: "info"
 
 webrca:
-  enabled: true
+  enabled: false
   api_url: "https://api.openshift.com/api/web-rca/v1/incidents"
   interval: "1h"
   # Offline token should be set via environment variable OFFLINE_TOKEN for security

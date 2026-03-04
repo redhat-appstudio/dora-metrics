@@ -120,9 +120,14 @@ func (p *ApplicationParser) parseApplicationName(name string) (string, string, s
 // Expected path format: "components/<component>/<environment>/" or similar patterns.
 // Returns uppercase environment for DevLake compatibility (PRODUCTION, STAGING, DEVELOPMENT).
 func (p *ApplicationParser) extractEnvironmentFromSourcePath(app *v1alpha1.Application) string {
-	sourcePath := app.Spec.Source.Path
+	var sourcePath string
+	if app.Spec.Source != nil {
+		sourcePath = app.Spec.Source.Path
+	} else if len(app.Spec.Sources) > 0 {
+		sourcePath = app.Spec.Sources[0].Path
+	}
 	if sourcePath == "" {
-		return "PRODUCTION" // Default fallback
+		return "PRODUCTION"
 	}
 
 	// Normalize path separators and convert to lowercase for matching
