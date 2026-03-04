@@ -208,6 +208,27 @@ func (r *RedisClient) IsDevLakeCommitProcessed(ctx context.Context, commitSHA st
 	return true, nil
 }
 
+// IsRevisionSentToDevLake checks if a revision has already been sent to DevLake for a component.
+// This prevents the same deployment from being sent multiple times when deployed to multiple clusters.
+func (r *RedisClient) IsRevisionSentToDevLake(ctx context.Context, revision, component string) (bool, error) {
+	key := r.buildKey("devlake-revision", revision, component)
+	_, err := r.client.Get(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return false, nil
+		}
+		return false, fmt.Errorf("failed to check revision in DevLake: %w", err)
+	}
+	return true, nil
+}
+
+// MarkRevisionSentToDevLake marks a revision as sent to DevLake for a component.
+func (r *RedisClient) MarkRevisionSentToDevLake(ctx context.Context, revision, component string) error {
+	key := r.buildKey("devlake-revision", revision, component)
+	expiration := 30 * 24 * time.Hour
+	return r.client.Set(ctx, key, "sent", expiration).Err()
+}
+
 // AcquireProcessingLock attempts to acquire a distributed lock for processing a deployment.
 // Returns true if the lock was acquired, false if another process is already processing it.
 // The lock expires after 5 minutes to prevent deadlocks.
