@@ -1,13 +1,13 @@
 module github.com/redhat-appstudio/dora-metrics
 
-go 1.24.6
+go 1.25.0
 
 toolchain go1.25.6
 
 require (
 	github.com/argoproj/argo-cd/v2 v2.14.20
 	github.com/goccy/go-json v0.10.5
-	github.com/gofiber/fiber/v2 v2.52.12
+	github.com/gofiber/fiber/v3 v3.1.0
 	github.com/google/go-github/v53 v53.2.0
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.18.0
@@ -40,7 +40,6 @@ require (
 	github.com/casbin/govaluate v1.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
-	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/cyphar/filepath-securejoin v0.3.6 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
@@ -52,7 +51,7 @@ require (
 	github.com/evanphx/json-patch v5.9.11+incompatible // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d // indirect
 	github.com/fatih/camelcase v1.0.0 // indirect
-	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
+	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.7.0 // indirect
@@ -74,6 +73,8 @@ require (
 	github.com/go-openapi/swag/yamlutils v0.25.4 // indirect
 	github.com/go-redis/cache/v9 v9.0.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
+	github.com/gofiber/schema v1.7.0 // indirect
+	github.com/gofiber/utils/v2 v2.0.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
@@ -95,12 +96,11 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kevinburke/ssh_config v1.6.0 // indirect
-	github.com/klauspost/compress v1.18.3 // indirect
+	github.com/klauspost/compress v1.18.4 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-runewidth v0.0.20 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/moby/spdystream v0.5.0 // indirect
 	github.com/moby/term v0.5.0 // indirect
@@ -113,6 +113,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
+	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/pjbgf/sha1cd v0.5.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -127,9 +128,9 @@ require (
 	github.com/skeema/knownhosts v1.3.1 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
+	github.com/tinylib/msgp v1.6.3 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.51.0 // indirect
-	github.com/valyala/tcplisten v1.0.0 // indirect
+	github.com/valyala/fasthttp v1.69.0 // indirect
 	github.com/vmihailenco/go-tinylfu v0.2.2 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
