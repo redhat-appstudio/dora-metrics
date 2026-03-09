@@ -1,6 +1,6 @@
 module github.com/redhat-appstudio/dora-metrics
 
-go 1.24.6
+go 1.25.0
 
 toolchain go1.25.6
 
