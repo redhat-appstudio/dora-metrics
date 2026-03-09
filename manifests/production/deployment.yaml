@@ -99,7 +99,7 @@ spec:
           mountPath: /app/configs
           readOnly: true
       - name: redis
-        image: redis:8-alpine
+        image: quay.io/opstree/redis:v8.4.2
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 6379
