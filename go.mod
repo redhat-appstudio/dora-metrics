@@ -1,6 +1,6 @@
 module github.com/redhat-appstudio/dora-metrics
 
-go 1.24.6
+go 1.25.0
 
 toolchain go1.25.6
 
@@ -8,7 +8,7 @@ require (
 	github.com/argoproj/argo-cd/v2 v2.14.20
 	github.com/goccy/go-json v0.10.5
 	github.com/gofiber/fiber/v2 v2.52.12
-	github.com/google/go-github/v53 v53.2.0
+	github.com/google/go-github/v84 v84.0.0
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.18.0
 	github.com/stretchr/testify v1.11.1
