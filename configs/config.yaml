@@ -32,6 +32,8 @@ argocd:
     - "cluster-secret-store"
     - "build-templates"
     - "policies"
+    - "image-rbac-proxy"
+    - "authentication"
 
   # Known cluster names for application name parsing
   # These are used to extract component and cluster information from application names
@@ -137,7 +139,6 @@ integration:
       - name: "konflux-infrastructure-team"
         project_id: "5"
         argocd_components:
-          - "authentication"
           - "backup"
           - "cert-manager"
           - "cost-management"
