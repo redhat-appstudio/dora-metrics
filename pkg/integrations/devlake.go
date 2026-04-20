@@ -237,22 +237,26 @@ func (d *DevLakeIntegration) SendIncidentEvent(ctx context.Context, incident Inc
 		Component:      d.getComponentFromProducts(incident.GetProducts()),
 	}
 
-	// Only add resolution date if incident is resolved (matching bash script logic exactly)
+	// Only add resolution date if incident is resolved
 	if isResolved {
 		logger.Debugf("Incident %s is resolved/closed, setting ResolutionDate", incident.GetIncidentID())
-		// Use actual resolution time if available, otherwise fall back to updated time
+		// Priority: resolved_at > last_changed_at > updated_at
+		// resolved_at is the actual resolution timestamp (preferred)
+		// last_changed_at reflects the last meaningful state change (not bumped by background jobs)
+		// updated_at is a last resort — it gets bumped by periodic background processes and can be days/weeks after resolution
 		if resolvedAt := incident.GetResolvedAt(); resolvedAt != nil && !resolvedAt.IsZero() {
 			devlakeIssue.ResolutionDate = d.FormatDevLakeDate(*resolvedAt)
 			logger.Debugf("Using resolved_at for ResolutionDate: %s", devlakeIssue.ResolutionDate)
+		} else if lastChangedAt := incident.GetLastChangedAt(); lastChangedAt != nil && !lastChangedAt.IsZero() {
+			devlakeIssue.ResolutionDate = d.FormatDevLakeDate(*lastChangedAt)
+			logger.Debugf("Using last_changed_at for ResolutionDate (resolved_at is nil or zero): %s", devlakeIssue.ResolutionDate)
 		} else {
-			// Fallback to updated time if no resolution time available
 			updatedAt := incident.GetUpdatedAt()
 			if !updatedAt.IsZero() {
 				devlakeIssue.ResolutionDate = d.FormatDevLakeDate(updatedAt)
-				logger.Debugf("Using updated_at for ResolutionDate (resolved_at is nil or zero): %s", devlakeIssue.ResolutionDate)
+				logger.Warnf("Using updated_at as last-resort fallback for ResolutionDate (resolved_at and last_changed_at are nil or zero): %s", devlakeIssue.ResolutionDate)
 			} else {
-				// If both resolved_at and updated_at are zero, don't set ResolutionDate
-				logger.Warnf("Both resolved_at and updated_at are zero for incident %s, not setting ResolutionDate", incident.GetIncidentID())
+				logger.Warnf("All timestamp fields are zero for incident %s, not setting ResolutionDate", incident.GetIncidentID())
 			}
 		}
 		logger.Debugf("Formatted ResolutionDate: %s", devlakeIssue.ResolutionDate)
