@@ -71,7 +71,13 @@ type Incident struct {
 	CreatedAt time.Time `json:"created_at"`
 
 	// UpdatedAt indicates when the incident was last modified
+	// WARNING: This field gets bumped by background processes (e.g., periodic batch updates)
+	// and may not reflect the actual last meaningful change. Prefer LastChangedAt for resolution logic.
 	UpdatedAt time.Time `json:"updated_at"`
+
+	// LastChangedAt indicates when the incident last had a meaningful state change
+	// (e.g., status change, resolution). Unlike UpdatedAt, this is not bumped by background processes.
+	LastChangedAt *time.Time `json:"last_changed_at,omitempty"`
 
 	// ResolvedAt indicates when the incident was resolved (if applicable)
 	ResolvedAt *time.Time `json:"resolved_at,omitempty"`
@@ -128,6 +134,16 @@ func (i *Incident) GetUpdatedAt() time.Time {
 // GetResolvedAt returns the incident resolution time for integration purposes
 func (i *Incident) GetResolvedAt() *time.Time {
 	return i.ResolvedAt
+}
+
+// GetLastChangedAt returns the incident last meaningful change time for integration purposes
+func (i *Incident) GetLastChangedAt() *time.Time {
+	return i.LastChangedAt
+}
+
+// GetClosedAt returns the incident close time for integration purposes
+func (i *Incident) GetClosedAt() *time.Time {
+	return i.ClosedAt
 }
 
 // GetProducts returns the incident products for integration purposes

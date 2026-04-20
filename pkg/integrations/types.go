@@ -11,5 +11,7 @@ type IncidentData interface {
 	GetCreatedAt() time.Time
 	GetUpdatedAt() time.Time
 	GetResolvedAt() *time.Time
+	GetLastChangedAt() *time.Time
+	GetClosedAt() *time.Time
 	GetProducts() []string
 }
