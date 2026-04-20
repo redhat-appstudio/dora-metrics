@@ -235,6 +235,90 @@ func TestIncident_GetUpdatedAt(t *testing.T) {
 	}
 }
 
+func TestIncident_GetLastChangedAt(t *testing.T) {
+	now := time.Now()
+
+	tests := []struct {
+		name          string
+		lastChangedAt *time.Time
+		expected      *time.Time
+	}{
+		{
+			name:          "valid last changed time",
+			lastChangedAt: &now,
+			expected:      &now,
+		},
+		{
+			name:          "nil last changed time",
+			lastChangedAt: nil,
+			expected:      nil,
+		},
+		{
+			name: "past last changed time",
+			lastChangedAt: func() *time.Time {
+				t := now.Add(-1 * time.Hour)
+				return &t
+			}(),
+			expected: func() *time.Time {
+				t := now.Add(-1 * time.Hour)
+				return &t
+			}(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			incident := &Incident{
+				LastChangedAt: tt.lastChangedAt,
+			}
+			result := incident.GetLastChangedAt()
+			assert.Equal(t, tt.expected, result, "Expected correct last changed time")
+		})
+	}
+}
+
+func TestIncident_GetClosedAt(t *testing.T) {
+	now := time.Now()
+
+	tests := []struct {
+		name     string
+		closedAt *time.Time
+		expected *time.Time
+	}{
+		{
+			name:     "valid closed time",
+			closedAt: &now,
+			expected: &now,
+		},
+		{
+			name:     "nil closed time",
+			closedAt: nil,
+			expected: nil,
+		},
+		{
+			name: "past closed time",
+			closedAt: func() *time.Time {
+				t := now.Add(-1 * time.Hour)
+				return &t
+			}(),
+			expected: func() *time.Time {
+				t := now.Add(-1 * time.Hour)
+				return &t
+			}(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			incident := &Incident{
+				ClosedAt: tt.closedAt,
+			}
+			result := incident.GetClosedAt()
+			assert.Equal(t, tt.expected, result, "Expected correct closed time")
+		})
+	}
+}
+
 func TestIncident_GetterMethods_WithCompleteData(t *testing.T) {
 	// Test all getter methods with a complete incident
 	now := time.Now()
