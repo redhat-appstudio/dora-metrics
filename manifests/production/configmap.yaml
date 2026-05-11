@@ -77,7 +77,7 @@ data:
         key_prefix: "dora-metrics"
 
     integration:
-      # DevLake Integration Configuration
+      # DevLake Integration Configurations
       # DevLake is a data engineering platform that collects, transforms, and visualizes software development data.
       # This integration sends deployment events from ArgoCD applications to DevLake projects for DORA metrics tracking.
       #
