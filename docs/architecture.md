@@ -16,7 +16,7 @@ graph TB
         APP2[Application 2]
         APP3[Application N]
     end
-    
+
     subgraph "DORA Metrics System"
         WATCH[ArgoCD Watcher]
         PROC[Event Processor]
@@ -24,16 +24,16 @@ graph TB
         COMM[Commit Processor]
         FMT[DevLake Formatter]
     end
-    
+
     subgraph "Storage Layer"
         REDIS[(Redis Cache)]
     end
-    
+
     subgraph "External Services"
         GITHUB[GitHub API]
         DEVLAKE[DevLake API]
     end
-    
+
     AC --> WATCH
     WATCH --> PROC
     PROC --> IMG
@@ -408,4 +408,3 @@ curl -X POST "$DEVLAKE_URL/api/v1/projects/$PROJECT_ID/deployments" \
 The DORA Metrics system provides a robust, scalable solution for tracking deployment metrics from ArgoCD to DevLake. The modular architecture ensures maintainability and extensibility while providing comprehensive DORA metrics for DevOps teams.
 
 The system handles both successful and failed deployments, provides detailed commit information, and integrates seamlessly with existing ArgoCD and DevLake infrastructure.
-

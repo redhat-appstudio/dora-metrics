@@ -106,7 +106,7 @@ func (m *Manager) RegisterDevLakeIntegration(baseURL string, projectID string, e
 	}
 	devlakeIntegration := NewDevLakeIntegration(baseURL, projectID, enabled, timeoutSeconds, teams)
 	m.RegisterIntegration("devlake", devlakeIntegration)
-	
+
 	// Log team configuration summary
 	if enabled && len(teams) > 0 {
 		totalComponents := 0

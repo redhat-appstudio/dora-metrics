@@ -44,30 +44,30 @@ release:
   mode: replace
   header: |
     ## DORA Metrics Server {{ .Version }}
-    
+
     A professional Go Fiber server with dual monitoring capabilities:
     - WebRCA incident monitoring
     - ArgoCD application monitoring
-    
+
     ### Installation
-    
+
     Download the appropriate binary for your platform from the assets below.
-    
+
     ### Usage
-    
+
     ```bash
     # Show help
     ./dora-metrics -help
-    
+
     # Show version
     ./dora-metrics -version
-    
+
     # Run with WebRCA monitoring
     ./dora-metrics -webrca-enabled=true -offline-token your-token
-    
+
     # Run with ArgoCD monitoring
     ./dora-metrics -argocd-enabled=true -argocd-namespaces argocd,flags
-    
+
     # Run both monitoring services
     ./dora-metrics -webrca-enabled=true -argocd-enabled=true -offline-token your-token
     ```

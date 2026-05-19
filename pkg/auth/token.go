@@ -161,4 +161,3 @@ func (v *Validator) GetUserInfoFromAPI(token string) (string, error) {
 func ValidateRedHatEmail(email string) bool {
 	return strings.HasSuffix(email, "@redhat.com")
 }
-

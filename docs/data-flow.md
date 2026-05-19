@@ -10,7 +10,7 @@ graph TB
         APP2[Application: konflux-api]
         APP3[Application: konflux-backend]
     end
-    
+
     subgraph "DORA Metrics System"
         WATCH[ArgoCD Watcher<br/>api/watcher.go]
         PROC[Event Processor<br/>processor/event.go]
@@ -18,16 +18,16 @@ graph TB
         COMM[Commit Processor<br/>processor/commits.go]
         FMT[DevLake Formatter<br/>parser/formatter.go]
     end
-    
+
     subgraph "Storage & Cache"
         REDIS[(Redis Cache<br/>Deployment Records<br/>Processed Commits)]
     end
-    
+
     subgraph "External APIs"
         GITHUB[GitHub API<br/>Commit Data<br/>Repository Info]
         DEVLAKE[DevLake API<br/>DORA Metrics<br/>Deployment Data]
     end
-    
+
     AC -->|MODIFIED Events| WATCH
     WATCH -->|Application Events| PROC
     PROC -->|Image Processing| IMG
@@ -47,12 +47,12 @@ flowchart TD
     B -->|OutOfSync + Missing| C[Failed Deployment Path]
     B -->|Sync Revision Match| D[New Deployment Path]
     B -->|Other| E[Skip Processing]
-    
+
     C --> C1[Get Commit History]
     C1 --> C2[Format as FAILED]
     C2 --> C3[Send to DevLake]
     C3 --> C4[Cache as Processed]
-    
+
     D --> D1[Check if Already Processed]
     D1 -->|Yes| E
     D1 -->|No| D2[Mark as Processed]
@@ -78,11 +78,11 @@ sequenceDiagram
     IP->>GH: Validate commit hashes
     GH-->>IP: Validation results
     IP-->>EP: Valid images list
-    
+
     EP->>CP: GetCommitHistoryForDeployment(app, appInfo)
     CP->>R: Get previous deployment
     R-->>CP: Previous deployment data
-    
+
     alt Previous deployment exists
         CP->>IP: FindChangedImages(current, previous)
         IP-->>CP: Changed images
@@ -93,10 +93,10 @@ sequenceDiagram
         CP->>GH: Get commit data for each image
         GH-->>CP: Commit data
     end
-    
+
     CP->>CP: Validate commit dates
     CP-->>EP: Complete commit history
-    
+
     EP->>F: FormatDeployment(app, appInfo, commits)
     F-->>EP: DevLake payload
 ```
@@ -128,7 +128,7 @@ flowchart TD
 graph TD
     A[DevLake Payload] --> B[Deployment Info]
     A --> C[Commit Info]
-    
+
     B --> B1[ID: commit-sha]
     B --> B2[Created Date]
     B --> B3[Started Date]
@@ -137,7 +137,7 @@ graph TD
     B --> B6[Result: SUCCESS/FAILED]
     B --> B7[Display Title]
     B --> B8[Name]
-    
+
     C --> C1[Repo URL]
     C --> C2[Ref Name]
     C --> C3[Started Date]
@@ -162,11 +162,11 @@ flowchart TD
     F --> H{Max Retries?}
     H -->|No| B
     H -->|Yes| G
-    
+
     C --> I{Commit Date Valid?}
     I -->|Yes| J[Process Commit]
     I -->|No| K[Skip Commit]
-    
+
     J --> L{DevLake Send Success?}
     L -->|Yes| M[Mark as Processed]
     L -->|No| N[Log Error, Continue]
@@ -179,11 +179,11 @@ graph TD
     A[Deployment Event] --> B{Check Redis Cache}
     B -->|Found| C[Skip Processing]
     B -->|Not Found| D[Process Deployment]
-    
+
     D --> E[Mark Commit as Processed]
     E --> F[Store Deployment Record]
     F --> G[Cache DevLake Commit]
-    
+
     H[Component Level] --> I[Prevent Duplicate DevLake Sends]
     J[Application Level] --> K[Prevent Duplicate Processing]
     L[Deployment Level] --> M[Store Complete Records]
@@ -200,23 +200,23 @@ sequenceDiagram
     participant DL as DevLake
 
     Note over AC,DL: Multiple applications deploying simultaneously
-    
+
     AC->>W: App1 MODIFIED (commit: abc123)
     AC->>W: App2 MODIFIED (commit: def456)
     AC->>W: App3 MODIFIED (commit: abc123)
-    
+
     W->>EP: Process App1
     EP->>R: Check processed(abc123, app1, cluster1)
     R-->>EP: Not processed
     EP->>R: Mark processed(abc123, app1, cluster1)
     EP->>DL: Send deployment (component: ui)
-    
+
     W->>EP: Process App2
     EP->>R: Check processed(def456, app2, cluster1)
     R-->>EP: Not processed
     EP->>R: Mark processed(def456, app2, cluster1)
     EP->>DL: Send deployment (component: api)
-    
+
     W->>EP: Process App3
     EP->>R: Check processed(abc123, app3, cluster1)
     R-->>EP: Not processed
@@ -233,14 +233,14 @@ flowchart TD
     A[ArgoCD Event] --> B{Status Check}
     B -->|OutOfSync + Missing| C[Failed Deployment]
     B -->|Other| D[Normal Processing]
-    
+
     C --> E[Get Commit History]
     E --> F[Format as FAILED]
     F --> G[Update Commit Messages]
     G --> H[Send to DevLake]
     H --> I[Cache as Processed]
     I --> J[Wait for Recovery]
-    
+
     K[Recovery Event] --> L[Health Status Change]
     L --> M[Process as New Deployment]
 ```
@@ -254,11 +254,10 @@ graph TD
     C --> D[Parallel Commit Fetching]
     D --> E[Batch DevLake Sends]
     E --> F[Async Cache Updates]
-    
+
     G[Memory Cache] --> H[Frequent Data]
     I[Redis Cache] --> J[Persistent Data]
     K[GitHub Cache] --> L[Commit Data]
 ```
 
 This comprehensive data flow documentation shows how the DORA Metrics system processes ArgoCD deployments and sends them to DevLake, with detailed diagrams for each major component and process flow.
-
