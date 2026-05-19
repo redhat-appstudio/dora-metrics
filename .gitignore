@@ -53,5 +53,8 @@ temp/
 coverage.out
 coverage.html
 
+# AgentReady assessment reports (contain local paths)
+.agentready/
+
 # Air (live reload) temporary files
 tmp/

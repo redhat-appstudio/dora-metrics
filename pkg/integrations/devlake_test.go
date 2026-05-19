@@ -29,16 +29,16 @@ type mockIncident struct {
 	products      []string
 }
 
-func (m *mockIncident) GetIncidentID() string       { return m.incidentID }
-func (m *mockIncident) GetSummary() string          { return m.summary }
-func (m *mockIncident) GetDescription() string      { return m.description }
-func (m *mockIncident) GetStatus() string           { return m.status }
-func (m *mockIncident) GetCreatedAt() time.Time     { return m.createdAt }
-func (m *mockIncident) GetUpdatedAt() time.Time     { return m.updatedAt }
-func (m *mockIncident) GetResolvedAt() *time.Time   { return m.resolvedAt }
+func (m *mockIncident) GetIncidentID() string        { return m.incidentID }
+func (m *mockIncident) GetSummary() string           { return m.summary }
+func (m *mockIncident) GetDescription() string       { return m.description }
+func (m *mockIncident) GetStatus() string            { return m.status }
+func (m *mockIncident) GetCreatedAt() time.Time      { return m.createdAt }
+func (m *mockIncident) GetUpdatedAt() time.Time      { return m.updatedAt }
+func (m *mockIncident) GetResolvedAt() *time.Time    { return m.resolvedAt }
 func (m *mockIncident) GetLastChangedAt() *time.Time { return m.lastChangedAt }
-func (m *mockIncident) GetClosedAt() *time.Time     { return m.closedAt }
-func (m *mockIncident) GetProducts() []string       { return m.products }
+func (m *mockIncident) GetClosedAt() *time.Time      { return m.closedAt }
+func (m *mockIncident) GetProducts() []string        { return m.products }
 
 // Helper function to create a time pointer
 func timePtr(t time.Time) *time.Time {

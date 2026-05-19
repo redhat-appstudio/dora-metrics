@@ -10,13 +10,13 @@ graph TB
         ARGOCD[ArgoCD Controller]
         DORA[DORA Metrics Pod]
     end
-    
+
     subgraph "External Services"
         REDIS[Redis Instance]
         GITHUB[GitHub API]
         DEVLAKE[DevLake Instance]
     end
-    
+
     ARGOCD -->|Monitor| DORA
     DORA -->|Cache| REDIS
     DORA -->|Fetch Data| GITHUB
@@ -88,7 +88,7 @@ data:
       port: "8080"
       environment: "production"
       logLevel: "info"
-    
+
     argocd:
       enabled: true
       namespaces:
@@ -100,14 +100,14 @@ data:
       knownClusters:
         - "production"
         - "staging"
-    
+
     storage:
       redis:
         host: "redis"
         port: 6379
         password: ""
         db: 0
-    
+
     integration:
       devlake:
         enabled: true
@@ -257,20 +257,20 @@ graph TD
     A --> C[ArgoCD Config]
     A --> D[Storage Config]
     A --> E[Integration Config]
-    
+
     B --> B1[Port]
     B --> B2[Environment]
     B --> B3[Log Level]
-    
+
     C --> C1[Enabled]
     C --> C2[Namespaces]
     C --> C3[Components]
     C --> C4[Clusters]
-    
+
     D --> D1[Redis Host]
     D --> D2[Redis Port]
     D --> D3[Redis Password]
-    
+
     E --> E1[DevLake URL]
     E --> E2[Project ID]
     E --> E3[Timeout]
@@ -358,7 +358,7 @@ spec:
       annotations:
         summary: "High deployment failure rate detected"
         description: "Deployment failure rate is {{ $value | humanizePercentage }}"
-    
+
     - alert: NoDeployments
       expr: rate(dora_deployments_total[1h]) == 0
       for: 10m
@@ -367,7 +367,7 @@ spec:
       annotations:
         summary: "No deployments detected"
         description: "No deployments have been processed in the last hour"
-    
+
     - alert: DevLakeIntegrationDown
       expr: up{job="dora-metrics"} == 0
       for: 1m
@@ -605,4 +605,3 @@ spec:
 ```
 
 This deployment guide provides comprehensive instructions for deploying and configuring the DORA Metrics system with visual diagrams and troubleshooting steps.
-

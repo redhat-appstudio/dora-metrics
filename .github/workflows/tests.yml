@@ -7,6 +7,26 @@ on:
     branches: [ main ]
 
 jobs:
+  lint-agents-md:
+    name: Validate AGENTS.md line limit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check AGENTS.md is under 60 lines
+        run: |
+          if [ ! -f AGENTS.md ]; then
+            echo "ERROR: AGENTS.md not found"
+            exit 1
+          fi
+          LINES=$(wc -l < AGENTS.md)
+          echo "AGENTS.md has $LINES lines"
+          if [ "$LINES" -gt 60 ]; then
+            echo "ERROR: AGENTS.md exceeds 60-line limit ($LINES lines)"
+            exit 1
+          fi
+
   test:
     name: Run Tests
     runs-on: ubuntu-latest
