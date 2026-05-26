@@ -71,7 +71,7 @@ echo -n "your-devlake-webhook-token" | base64
 The application uses Redis as a sidecar container within the same pod with Kubernetes service discovery:
 
 - **REDIS_HOST**: Redis service name (default: "redis-service" from deployment)
-- **REDIS_PORT**: Redis port (default: "6379" from deployment)  
+- **REDIS_PORT**: Redis port (default: "6379" from deployment)
 - **REDIS_PASSWORD**: Redis password (from secrets)
 
 **Service Discovery**: The DORA metrics container discovers Redis through the `redis-service` Kubernetes service, which provides automatic DNS resolution and load balancing within the cluster.

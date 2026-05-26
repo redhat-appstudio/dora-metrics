@@ -22,7 +22,7 @@ graph TB
         AC[ArgoCD Controller]
         APP[Applications]
     end
-    
+
     subgraph "DORA Metrics System"
         W[ArgoCD Watcher]
         EP[Event Processor]
@@ -30,13 +30,13 @@ graph TB
         CP[Commit Processor]
         F[DevLake Formatter]
     end
-    
+
     subgraph "Storage & APIs"
         R[(Redis Cache)]
         GH[GitHub API]
         DL[DevLake API]
     end
-    
+
     AC -->|Events| W
     W --> EP
     EP --> IP
@@ -247,4 +247,3 @@ For issues and questions:
 ## 📝 License
 
 This documentation is part of the DORA Metrics project and follows the same license terms.
-
