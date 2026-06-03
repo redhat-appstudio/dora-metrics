@@ -3,13 +3,23 @@
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "command": "gofmt -w $CLAUDE_FILE_PATH 2>/dev/null || true"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "gofmt -w $CLAUDE_FILE_PATH 2>/dev/null || true"
+          }
+        ]
       }
     ],
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "command": "echo $CLAUDE_TOOL_INPUT | grep -qE 'rm -rf /|DROP TABLE|--force|git push.*--force' && echo 'BLOCK: destructive command detected' && exit 1 || true"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo $CLAUDE_TOOL_INPUT | grep -qE 'rm -rf /|DROP TABLE|--force|git push.*--force' && echo 'BLOCK: destructive command detected' && exit 1 || true"
+          }
+        ]
       }
     ]
   }
