@@ -17,7 +17,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -buildvcs=false -o main ./cmd/server
 
 # Final stage
-FROM registry.redhat.io/ubi9-minimal:9.7
+FROM registry.redhat.io/ubi9-minimal:9.8-1780378819
 
 # Create non-root user
 RUN groupadd -g 1001 dora-metrics && \
