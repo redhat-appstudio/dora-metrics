@@ -1,0 +1,20 @@
+# CODEOWNERS — dora-metrics
+# Human-owned. Agents must not modify this file.
+#
+# These owners are required reviewers for PRs touching matched paths.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything
+* @flacatus @Troy876
+
+# Agent guardrails — always require human review
+CODEOWNERS @flacatus @Troy876
+AGENTS.md @flacatus @Troy876
+CLAUDE.md @flacatus @Troy876
+.github/workflows/ @flacatus @Troy876
+
+# Production deployment manifests
+manifests/production/ @flacatus @Troy876
+
+# Runtime configuration (team routing, namespaces)
+configs/ @flacatus @Troy876
