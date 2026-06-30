@@ -190,11 +190,7 @@ func convertTeamYAMLToConfig(yamlTeams []TeamYAMLConfig) []TeamConfig {
 	}
 	teams := make([]TeamConfig, len(yamlTeams))
 	for i, yamlTeam := range yamlTeams {
-		teams[i] = TeamConfig{
-			Name:             yamlTeam.Name,
-			ProjectID:        yamlTeam.ProjectID,
-			ArgocdComponents: yamlTeam.ArgocdComponents,
-		}
+		teams[i] = TeamConfig(yamlTeam)
 	}
 	return teams
 }

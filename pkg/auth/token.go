@@ -95,7 +95,7 @@ func (v *Validator) ValidateTokenWithAPI(token string) error {
 	if err != nil {
 		return fmt.Errorf("API request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 		return errors.New("token is invalid or expired")
@@ -123,7 +123,7 @@ func (v *Validator) GetUserInfoFromAPI(token string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("API request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 		return "", errors.New("token is invalid or expired")

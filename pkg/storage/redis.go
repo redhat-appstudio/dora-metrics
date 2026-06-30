@@ -21,11 +21,11 @@ type RedisClient struct {
 // It initializes the connection and validates connectivity.
 func NewRedisClient(config RedisConfig) (*RedisClient, error) {
 	if !config.Enabled {
-		return nil, fmt.Errorf("Redis storage is disabled")
+		return nil, fmt.Errorf("redis storage is disabled")
 	}
 
 	if config.Address == "" {
-		return nil, fmt.Errorf("Redis address is required")
+		return nil, fmt.Errorf("redis address is required")
 	}
 
 	// Create Redis client with optimized settings
@@ -235,14 +235,18 @@ func (r *RedisClient) MarkRevisionSentToDevLake(ctx context.Context, revision, c
 func (r *RedisClient) AcquireProcessingLock(ctx context.Context, appName, clusterName, revision string) (bool, error) {
 	lockKey := r.buildKey("lock", "processing", appName, clusterName, revision)
 
-	// Use SETNX (SET if Not eXists) to atomically acquire the lock
-	// Lock expires after 5 minutes to prevent deadlocks if a process crashes
-	acquired, err := r.client.SetNX(ctx, lockKey, "locked", 5*time.Minute).Result()
+	result, err := r.client.SetArgs(ctx, lockKey, "locked", redis.SetArgs{
+		Mode: "NX",
+		TTL:  5 * time.Minute,
+	}).Result()
+	if err == redis.Nil {
+		return false, nil
+	}
 	if err != nil {
 		return false, fmt.Errorf("failed to acquire processing lock: %w", err)
 	}
 
-	return acquired, nil
+	return result == "OK", nil
 }
 
 // ReleaseProcessingLock releases a distributed lock for processing a deployment.

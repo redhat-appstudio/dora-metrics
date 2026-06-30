@@ -114,7 +114,7 @@ func (c *Client) requestNewToken() (*TokenResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", ErrHTTPRequest, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != HTTPStatusOK {
 		body, _ := io.ReadAll(resp.Body)
@@ -187,10 +187,7 @@ func (c *Client) fetchPage(ctx context.Context, token string, page, size int) (*
 	var urlBuilder strings.Builder
 	urlBuilder.Grow(len(c.baseURL) + 50) // Pre-allocate reasonable capacity
 	urlBuilder.WriteString(c.baseURL)
-	urlBuilder.WriteString("?page=")
-	urlBuilder.WriteString(fmt.Sprintf("%d", page))
-	urlBuilder.WriteString("&size=")
-	urlBuilder.WriteString(fmt.Sprintf("%d", size))
+	fmt.Fprintf(&urlBuilder, "?page=%d&size=%d", page, size)
 	url := urlBuilder.String()
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -205,7 +202,7 @@ func (c *Client) fetchPage(ctx context.Context, token string, page, size int) (*
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", ErrHTTPRequest, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
