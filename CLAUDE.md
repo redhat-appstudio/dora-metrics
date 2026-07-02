@@ -55,7 +55,7 @@ make unit-test                # + coverage report → coverage.out
 go test ./... -v -race        # what CI runs
 
 # Lint
-make lint                     # golangci-lint run
+make lint                     # golangci-lint v2 (auto-installs if missing)
 
 # Single-file lint:
 golangci-lint run ./path/to/file.go

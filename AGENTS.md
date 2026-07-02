@@ -8,7 +8,7 @@ Go service that watches ArgoCD deployments and WebRCA incidents, then forwards s
 make build          # binary → bin/dora-metrics
 make test           # go test ./... (no external deps needed)
 make unit-test      # same + coverage report
-make lint           # golangci-lint run
+make lint           # golangci-lint v2 (auto-installs if missing)
 # Single-file lint:
 golangci-lint run ./path/to/file.go
 # Single-file type-check:

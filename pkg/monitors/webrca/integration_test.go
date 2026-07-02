@@ -26,7 +26,8 @@ func TestClient_Integration_Pagination(t *testing.T) {
 			Total: 3,
 		}
 
-		if page == "1" {
+		switch page {
+		case "1":
 			// Return exactly DefaultPageSize items to trigger pagination
 			incidentList.Items = make([]Incident, 100)
 			for i := 0; i < 100; i++ {
@@ -39,7 +40,7 @@ func TestClient_Integration_Pagination(t *testing.T) {
 					UpdatedAt:  time.Now(),
 				}
 			}
-		} else if page == "2" {
+		case "2":
 			// Return the remaining items (less than DefaultPageSize to stop pagination)
 			incidentList.Items = []Incident{
 				{
@@ -59,12 +60,12 @@ func TestClient_Integration_Pagination(t *testing.T) {
 					UpdatedAt:  time.Now(),
 				},
 			}
-		} else {
+		default:
 			incidentList.Items = []Incident{}
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(incidentList)
+		_ = json.NewEncoder(w).Encode(incidentList)
 	}))
 	defer server.Close()
 

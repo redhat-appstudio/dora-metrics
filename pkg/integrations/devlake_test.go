@@ -267,7 +267,7 @@ func TestDevLakeIntegration_ResolutionDatePriority(t *testing.T) {
 			var capturedPayload DevLakeIssue
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				body, _ := io.ReadAll(r.Body)
-				json.Unmarshal(body, &capturedPayload)
+				_ = json.Unmarshal(body, &capturedPayload)
 				w.WriteHeader(http.StatusOK)
 			}))
 			defer server.Close()

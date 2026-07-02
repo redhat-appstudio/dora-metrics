@@ -140,22 +140,6 @@ func (h *Handler) filterIgnoredApplications(applications []argocd.Application) [
 	return applications
 }
 
-// determineEnvironment determines the environment based on source path.
-func (h *Handler) determineEnvironment(sourcePath string) string {
-	if sourcePath == "" {
-		return "production"
-	}
-
-	path := strings.ToLower(sourcePath)
-	if strings.Contains(path, "staging") || strings.Contains(path, "stage") {
-		return "staging"
-	} else if strings.Contains(path, "dev") || strings.Contains(path, "development") {
-		return "development"
-	}
-
-	return "production"
-}
-
 // ApplicationInfo represents application information in JSON format
 type ApplicationInfo struct {
 	Namespace    string   `json:"namespace" toon:"namespace"`
@@ -188,7 +172,7 @@ func (h *Handler) validateAuth(c *fiber.Ctx) bool {
 	// Get Authorization header
 	authHeader := c.Get("Authorization")
 	if authHeader == "" {
-		c.Status(401).JSON(fiber.Map{
+		_ = c.Status(401).JSON(fiber.Map{
 			"error": "Authorization header is required",
 		})
 		return false
@@ -197,7 +181,7 @@ func (h *Handler) validateAuth(c *fiber.Ctx) bool {
 	// Extract Bearer token
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 || parts[0] != "Bearer" {
-		c.Status(401).JSON(fiber.Map{
+		_ = c.Status(401).JSON(fiber.Map{
 			"error": "Invalid Authorization header format. Expected: Bearer <token>",
 		})
 		return false
@@ -209,7 +193,7 @@ func (h *Handler) validateAuth(c *fiber.Ctx) bool {
 	email, err := h.authValidator.ValidateTokenAndExtractEmail(token)
 	if err != nil {
 		logger.Warnf("Token validation failed: %v", err)
-		c.Status(401).JSON(fiber.Map{
+		_ = c.Status(401).JSON(fiber.Map{
 			"error": "Invalid or expired token",
 		})
 		return false
@@ -217,7 +201,7 @@ func (h *Handler) validateAuth(c *fiber.Ctx) bool {
 
 	// Validate email domain - must be @redhat.com
 	if !auth.ValidateRedHatEmail(email) {
-		c.Status(403).JSON(fiber.Map{
+		_ = c.Status(403).JSON(fiber.Map{
 			"error": "Access denied. Only @redhat.com email addresses are allowed",
 		})
 		return false

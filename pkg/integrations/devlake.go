@@ -303,7 +303,7 @@ func (d *DevLakeIntegration) SendIncidentEvent(ctx context.Context, incident Inc
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 400 {
 		// Read response body for error details
@@ -348,7 +348,7 @@ func (d *DevLakeIntegration) CloseIncident(ctx context.Context, incidentID strin
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 400 {
 		// Read response body for error details
@@ -442,7 +442,7 @@ func (d *DevLakeIntegration) sendDeploymentToProject(ctx context.Context, deploy
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 400 {
 		// Read response body for error details
@@ -582,7 +582,7 @@ func (d *DevLakeIntegration) executeWithRetry(ctx context.Context, req *http.Req
 			if statusCode >= 400 {
 				// Read response body for error details
 				body, readErr := io.ReadAll(resp.Body)
-				resp.Body.Close()
+				_ = resp.Body.Close()
 				if readErr != nil {
 					return nil, fmt.Errorf("DevLake API returned error status %d (failed to read response body: %v)", statusCode, readErr)
 				}
@@ -594,8 +594,8 @@ func (d *DevLakeIntegration) executeWithRetry(ctx context.Context, req *http.Req
 
 		// Close response body if we're going to retry
 		if resp != nil {
-			io.Copy(io.Discard, resp.Body) // Drain body
-			resp.Body.Close()
+			_, _ = io.Copy(io.Discard, resp.Body)
+			_ = resp.Body.Close()
 		}
 
 		// Log the error for retryable cases
@@ -612,7 +612,7 @@ func (d *DevLakeIntegration) executeWithRetry(ctx context.Context, req *http.Req
 	}
 	if lastResp != nil {
 		body, _ := io.ReadAll(lastResp.Body)
-		lastResp.Body.Close()
+		_ = lastResp.Body.Close()
 		return nil, fmt.Errorf("%s returned error status %d after %d retries: %s", operation, lastResp.StatusCode, maxRetries, string(body))
 	}
 	return nil, fmt.Errorf("%s failed after %d retries: unknown error", operation, maxRetries)
