@@ -45,7 +45,7 @@ jobs:
     if: >-
       github.event_name != 'issue_comment'
       || github.event.comment.user.type != 'Bot'
-    uses: redhat-appstudio/.fullsend/.github/workflows/dispatch.yml@main
+    uses: redhat-appstudio/.fullsend/.github/workflows/dispatch.yml@cdaa9106c9c57bfebf0159031398a0f51247df10 # main
     with:
       event_action: ${{ github.event.action }}
 
