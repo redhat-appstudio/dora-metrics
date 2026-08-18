@@ -8,7 +8,7 @@ require (
 	github.com/argoproj/argo-cd/v2 v2.14.21
 	github.com/goccy/go-json v0.10.6
 	github.com/gofiber/fiber/v2 v2.52.15
-	github.com/google/go-github/v53 v53.2.0
+	github.com/google/go-github/v90 v90.0.0
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.22.0
 	github.com/stretchr/testify v1.12.0
