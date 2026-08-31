@@ -5,7 +5,7 @@ go 1.25.0
 toolchain go1.26.3
 
 require (
-	github.com/argoproj/argo-cd/v2 v2.14.21
+	github.com/argoproj/argo-cd/v3 v3.5.2
 	github.com/goccy/go-json v0.10.6
 	github.com/gofiber/fiber/v2 v2.52.15
 	github.com/google/go-github/v53 v53.2.0
