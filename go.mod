@@ -1,8 +1,6 @@
 module github.com/redhat-appstudio/dora-metrics
 
-go 1.25.0
-
-toolchain go1.26.3
+go 1.27
 
 require (
 	github.com/argoproj/argo-cd/v2 v2.14.21
