@@ -1,6 +1,6 @@
 module github.com/redhat-appstudio/dora-metrics
 
-go 1.25.0
+go 1.26.0
 
 toolchain go1.26.3
 
@@ -11,7 +11,7 @@ require (
 	github.com/google/go-github/v53 v53.2.0
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.22.0
-	github.com/stretchr/testify v1.12.0
+	github.com/stretchr/testify v1.12.1
 	github.com/toon-format/toon-go v0.0.0-20251202084852-7ca0e27c4e8c
 	go.uber.org/zap v1.28.0
 	golang.org/x/oauth2 v0.36.0
@@ -26,7 +26,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
-	github.com/Microsoft/go-winio v0.6.2 // indirect
+	github.com/Microsoft/go-winio v0.6.4 // indirect
 	github.com/ProtonMail/go-crypto v1.4.1 // indirect
 	github.com/andybalholm/brotli v1.2.2 // indirect
 	github.com/argoproj/gitops-engine v0.7.1-0.20250521000818-c08b0a72c1f1 // indirect
@@ -121,7 +121,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
-	github.com/sirupsen/logrus v1.9.4 // indirect
+	github.com/sirupsen/logrus v1.10.2 // indirect
 	github.com/skeema/knownhosts v1.3.1 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
@@ -136,11 +136,11 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/crypto v0.54.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/sync v0.23.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
