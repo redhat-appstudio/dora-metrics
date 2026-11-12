@@ -6,7 +6,7 @@ import (
 	"github.com/redhat-appstudio/dora-metrics/internal/version"
 
 	argocdclient "github.com/argoproj/argo-cd/v2/pkg/client/clientset/versioned"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 // SetupRoutes configures all HTTP routes for the DORA Metrics Server.

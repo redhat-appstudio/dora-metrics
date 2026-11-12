@@ -1,7 +1,7 @@
 package argocd
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 // RegisterRoutes registers all ArgoCD API routes.
