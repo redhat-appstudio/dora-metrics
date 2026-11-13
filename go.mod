@@ -11,7 +11,7 @@ require (
 	github.com/google/go-github/v53 v53.2.0
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.22.0
-	github.com/stretchr/testify v1.12.0
+	github.com/stretchr/testify v1.12.1
 	github.com/toon-format/toon-go v0.0.0-20251202084852-7ca0e27c4e8c
 	go.uber.org/zap v1.28.0
 	golang.org/x/oauth2 v0.36.0
