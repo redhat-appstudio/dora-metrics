@@ -17,9 +17,9 @@ import (
 	"github.com/redhat-appstudio/dora-metrics/pkg/storage"
 
 	argocdclient "github.com/argoproj/argo-cd/v2/pkg/client/clientset/versioned"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v3/middleware/recover"
 )
 
 // Server represents the HTTP server instance with all its components.
